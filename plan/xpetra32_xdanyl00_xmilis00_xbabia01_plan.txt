@@ -1,11 +1,11 @@
 ------------------------------------------------------------------------------
 Stanovené termíny:
   3. 3. 2023.
-    - Plán projektu
+    	  - Plán projektu
 	  - Vytvoření GitHub repozitáře
   12. 3. 2023.
 	  - Vytvoření testů pro matematickou knihovnu
-  	- Mockup GUI
+	  - Mockup GUI
 	  - Napsání makefile
   17. 3. 2023. 
 	  - vytvoření základní matematické knihovny
