@@ -1,0 +1,64 @@
+------------------------------------------------------------------------------
+Stanovené termíny:
+  3. 3. 2023.
+    - Plán projektu
+	  - Vytvoření GitHub repozitáře
+  12. 3. 2023.
+	  - Vytvoření testů pro matematickou knihovnu
+  	- Mockup GUI
+	  - Napsání makefile
+  17. 3. 2023. 
+	  - vytvoření základní matematické knihovny
+  19. 3. 2023. 
+	  - vytvoření pokročilé matematické knihovny
+  24. 3. 2023
+	  - vytvoření programu pro výpočet směrodatné odchýlky a profiling
+  26. 3. 2023
+	  - Dodělání makefile
+	  - Tvorba GUI
+  31. 3. 2023
+	  - Instalátor, odinstalátor
+	  - Vygenerování programové dokumentace
+	  - Debugging
+  3. 4. 2023
+	  - Zkušební instalace
+  9. 4. 2023
+	  - Vytvoření návodu
+  26. 4. 2023
+	  - Zhodnocení práce, porovnání plánu
+	  - Vytvoření prezentace na obhajobu
+
+--------------------------------------------------------------------------------
+Přidělení úkolů:
+
+xpetra32 - 
+- vytvoření GitHub repozitáře
+- prezentace pro obhajobu
+- mockup GUI
+- GUI
+
+xmilis00 - 
+- programové dokumentace 
+- profiling
+- instalátor a odinstalátor
+- návod
+
+xdanyl00 - 
+- testy
+- pokroč. mat. knihovn
+- zhodnocení práce, porovnání plánu
+- zkušební instalace programu
+
+xbabia01 - 
+- vytvoření plánu projektu
+- Makefile
+- matematická knihovna
+- Debugging
+
+------------------------------------------------------------------------------
+Komunikační kanály:
+
+- Discord: Diskuzní kanál při společné práci
+- GitHub: Pracovní kanál pro hosting a správa verzí
+	Link na repozitář: https://github.com/Mino09/Calculator.git
+			   (Pozvánka poslána na mail ivs.kontrola@gmail.com)
