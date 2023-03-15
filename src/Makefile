@@ -2,11 +2,8 @@ SRC_DIR := Calculator
 TEST_DIR := $(SRC_DIR)/tests
 DOC_DIR := ../doc
 TEAM_PACK_DIR := ../../$(TEAM_PACK_NAME)
-WIS_DIR := ..
 INSTALLER_DIR := ../installer
 PYTHON := python3
-PIP := pip3
-PYINSTALLER := pyinstaller
 
 SRC_FILES := $(wildcard $(SRC_DIR)/*.py)
 TEST_SRC_FILES := $(wildcard $(TEST_DIR)/*.py)
@@ -28,7 +25,7 @@ setup:
 # Run the GUI calculator
 .PHONY: run
 run: $(SRC_FILES)
-	$(PYTHON) -m gui_calc
+	$(PYTHON) -m --------- #TODO
 
 # Run unit tests
 .PHONY: test
@@ -38,7 +35,7 @@ test: $(MATH_FILES) $(TEST_SRC_FILES)
 # Run code profiler
 .PHONY: profile
 profile: $(SRC_FILES)
-	$(PYTHON) -m deviation
+	$(PYTHON) -m ------- #TODO
 
 # Generate documentation with Doxygen
 .PHONY: doc
