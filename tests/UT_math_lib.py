@@ -1,7 +1,15 @@
 import math
 import unittest
 from src.math_lib import *
+from src.extended_math_lib import *
 
+##
+# @file: UT_math_lib.py
+# @brief: Unit Tests for Math Library for IVS project 2.
+# @author Danyleyko Kirill (xdanyl00)
+# @Created: 2023-03-06
+# @Last Modified: 2023-03-25
+##
 
 class TestMathLibrary(unittest.TestCase):
 
@@ -46,10 +54,11 @@ class TestMathLibrary(unittest.TestCase):
     # Test Method for 'Square Root(math.sqrt)' function
     def test_square_root(self):
         """
-        math.sqrt
+        sqrt
         """
         self.assertAlmostEqual(sqrt(4), 2)
         self.assertAlmostEqual(sqrt(9), 3)
+        self.assertAlmostEqual(sqrt(121), 11)
         self.assertAlmostEqual(sqrt(2), math.sqrt(2))
         with self.assertRaises(ValueError):
             sqrt(-1)
