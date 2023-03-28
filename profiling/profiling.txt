@@ -1,0 +1,35 @@
+60439 function calls in 0.040 seconds
+
+   Ordered by: standard name
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+        1    0.000    0.000    0.040    0.040 <string>:1(<module>)
+        6    0.000    0.000    0.000    0.000 codecs.py:319(decode)
+     9900    0.006    0.000    0.008    0.000 extended_math_lib.py:35(power)
+        1    0.000    0.000    0.000    0.000 extended_math_lib.py:60(sqrt)
+    19799    0.004    0.000    0.004    0.000 math_lib.py:20(add)
+     9901    0.002    0.000    0.002    0.000 math_lib.py:29(sub)
+        2    0.000    0.000    0.000    0.000 math_lib.py:48(div)
+        1    0.006    0.006    0.008    0.008 stddev.py:25(mean_function)
+        1    0.012    0.012    0.024    0.024 stddev.py:38(variance_function)
+        1    0.000    0.000    0.032    0.032 stddev.py:51(standard_deviation)
+        1    0.006    0.006    0.040    0.040 stddev.py:60(main)
+        6    0.000    0.000    0.000    0.000 {built-in method _codecs.utf_8_decode}
+       24    0.000    0.000    0.000    0.000 {built-in method builtins.abs}
+        1    0.000    0.000    0.040    0.040 {built-in method builtins.exec}
+     9900    0.002    0.000    0.002    0.000 {built-in method builtins.isinstance}
+        2    0.000    0.000    0.000    0.000 {built-in method builtins.len}
+        1    0.000    0.000    0.000    0.000 {built-in method builtins.print}
+     9900    0.002    0.000    0.002    0.000 {method 'append' of 'list' objects}
+        1    0.000    0.000    0.000    0.000 {method 'disable' of '_lsprof.Profiler' objects}
+      990    0.001    0.000    0.001    0.000 {method 'split' of 'str' objects}
+
+(approx. 1000 numbers - 10, 10³, 10⁶)
+
+
+Based on the profiler output, the program spends the most time in the 
+variance_function function that takes up 0.024 seconds.
+
+Therefore, the best place to focus on optimizing the code would be in the 
+variance_function by potentially optimizing the mathematical calculations 
+being performed.
