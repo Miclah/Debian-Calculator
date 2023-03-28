@@ -38,7 +38,7 @@ def variance_function(data, mean):
     n = len(data)
     numerator = 0
     for x in data:
-        numerator = math_lib.add(numerator, math_lib.mul(math_lib.sub(x, mean), math_lib.sub(x, mean)))
+        numerator = math_lib.add(numerator, extended_math_lib.power(math_lib.sub(x, mean), 2))
     denominator = math_lib.sub(n, 1)
     return math_lib.div(numerator, denominator)
 
