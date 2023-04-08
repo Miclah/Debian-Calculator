@@ -72,3 +72,31 @@ def sqrt(n):
             if abs(new_guess - guess) < 1e-6:
                 return new_guess
             guess = new_guess
+
+##
+# @brief: Logarithm
+# @param base: Base of Logarithm
+# @param x: First operand
+# @return: Returns Logarithm of X by base
+#
+def logarithm(base, x):
+    """
+    Calculates logarithm of x with the specified base.
+    """
+    if base <= 0 or x <= 0:
+        raise ValueError("Both base and x must be positive")
+    elif base == 1:
+        raise ValueError("Base cannot be equal to 1")
+    elif x < base:
+        raise ValueError("Base must be less than x")
+    else:
+        result = 0
+        while x >= base:
+            x /= base
+            result += 1
+
+        while x < 1:
+            x *= base
+            result -= 1
+
+        return result + (x - 1) / (x + 1)
