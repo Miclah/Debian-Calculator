@@ -7,6 +7,8 @@
 ##
 
 #TODO: 
+# make a white outline around the calculator and tutorial window. 
+# add the white line around the input/output window
 # sqrt x crashes the calculator,
 # tutorial window still has some things left to tweak
 # () sometimes cause a problem with calculations
@@ -16,7 +18,7 @@
 
 import sys
 import locale
-from PyQt5.QtWidgets import QDialog, QTextEdit, QVBoxLayout
+from PyQt5.QtWidgets import QDialog, QTextEdit, QVBoxLayout, QScrollArea, QGraphicsDropShadowEffect
 from PyQt5.QtWidgets import QApplication, QMainWindow, QLineEdit, QPushButton, QVBoxLayout, QWidget, QGridLayout, QLabel, QHBoxLayout, QSizePolicy
 from PyQt5.QtGui import QFont
 from PyQt5.QtCore import Qt, QSize
@@ -46,22 +48,41 @@ class TutorialWindow(QDialog):
         super(TutorialWindow, self).__init__(parent)
         self.setModal(True)
         self.setWindowTitle("Tutorial")
-        self.setFixedSize(400, 300)
+        self.setFixedSize(600, 500)
         self.setWindowFlags(Qt.FramelessWindowHint | Qt.Dialog)  # Add Qt.Dialog flag
 
         self.oldPos = None
 
-        self.setStyleSheet("""
+            
+        self.setStyleSheet('''
             QDialog {
-                background-color: #202020;
+                background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                                                stop: 0 #303030, stop: 1 #505050);
+                border-radius: 10px;
+            }
+            QScrollArea {
+                border: none;
+                background-color: transparent;
+            }
+            QScrollArea QWidget {
+                background-color: transparent;
             }
             QLabel {
                 color: white;
-                font-size: 14px;
+                font-family: "Segoe UI";
+                font-size: 16px;
+                font-weight: normal;
+                background-color: transparent;
+            }
+
+            QLabel[heading="true"] {
+                font-size: 18px;
+                font-weight: bold;
             }
             QPushButton {
                 background-color: #505050;
                 color: white;
+                font-family: "Segoe UI";
                 font-size: 14px;
                 border: 1px solid #707070;
                 padding: 4px 10px;
@@ -69,7 +90,10 @@ class TutorialWindow(QDialog):
             QPushButton:hover {
                 background-color: #707070;
             }
-        """)
+        ''')
+        
+        heading_label = QLabel("Using the Mouse:")
+        heading_label.setProperty("heading", True)
 
         self.layout = QVBoxLayout()
         self.layout.setContentsMargins(20, 10, 10, 20)
@@ -78,53 +102,92 @@ class TutorialWindow(QDialog):
 
         self._createTitleBar()
 
-        self.label = QLabel("Welcome to the Calculator Tutorial")
-        self.label.setAlignment(Qt.AlignCenter)
-        self.layout.addWidget(self.label)
-
-        self.tutorial_text = QLabel("This calculator is designed to be user-friendly and easy to use. "
-                                    "To perform calculations, you can either use your mouse to click on the buttons "
-                                    "or use your keyboard to input numbers and operators.\n\n"
-                                    "Basic Operations:\n"
-                                    "1. Addition (+): Click the '+' button or press the '+' key on your keyboard.\n"
-                                    "2. Subtraction (-): Click the '-' button or press the '-' key on your keyboard.\n"
-                                    "3. Multiplication (×): Click the '×' button or press the '*' key on your keyboard.\n"
-                                    "4. Division (÷): Click the '÷' button or press the '/' key on your keyboard.\n\n"
-                                    "Advanced Operations:\n"
-                                    "1. Factorial (x!): Click the 'x!' button or press the '!' key on your keyboard.\n"
-                                    "2. Square Root (√x): Click the '√x' button or press the 'r' key on your keyboard.\n"
-                                    "3. Exponentiation (x^y): Click the 'x^y' button or press the '^' key on your keyboard.\n"
-                                    "4. Logarithms (log): Click the 'log' button or press the 'l' key on your keyboard.\n\n"
-                                    "Clearing the Display:\n"
-                                    "1. To clear the entire display, click the 'C' button or press the 'C' key on your keyboard.\n"
-                                    "2. To delete the last character, click the 'DEL' button or press the 'Backspace' key on your keyboard.")
-        self.tutorial_text.setWordWrap(True)
         
-        self.tutorial_text.setAlignment(Qt.AlignJustify)
-        self.layout.addWidget(self.tutorial_text)
+        self.scroll_area = QScrollArea()
+        self.scroll_area.setWidgetResizable(True)
+        self.layout.addWidget(self.scroll_area)
 
+        self.scroll_area_contents = QWidget()
+        self.scroll_area.setWidget(self.scroll_area_contents)
+
+        self.scroll_area_layout = QVBoxLayout()
+        self.scroll_area_layout.setContentsMargins(20, 20, 20, 20)  # Add padding around the content
+        self.scroll_area_layout.setSpacing(10)  # Adjust the spacing value as needed
+
+
+        self.scroll_area_contents.setLayout(self.scroll_area_layout)
+
+        self.tutorial_text = [
+            QLabel("<p>Welcome to the Calculator Tutorial! This calculator is designed to be user-friendly and easy to use.</p>"),
+            QLabel("<p>You can perform calculations using either your mouse or your keyboard. Let's go through each option.</p>"),
+            QLabel("<p><b>Using the Mouse:</b></p>"),
+            QLabel("<ul>"
+                "<li>To input numbers, click on the number buttons (0-9) on the calculator.</li>"
+                "<li>To perform basic operations, click on the respective operation buttons:</li>"
+                "<ul>"
+                "<li>Addition (+): Click the '+' button.</li>"
+                "<li>Subtraction (-): Click the '-' button.</li>"
+                "<li>Multiplication (×): Click the '×' button.</li>"
+                "<li>Division (÷): Click the '÷' button.</li>"
+                "<li>Power (^): Click the '^' button.</li>"
+                "<li>Logarithm (log): Click the 'log' button.</li>"
+                "</ul>"
+                "<li>To clear the input field, click the 'C' button.</li>"
+                "<li>To evaluate the expression, click the '=' button.</li>"
+                "</ul>"),
+            QLabel("<p><b>Using the Keyboard:</b></p>"),
+            QLabel("<ul>"
+                "<li>To input numbers, press the number keys (0-9) on your keyboard.</li>"
+                "<li>To perform basic operations, press the respective operation keys:</li>"
+                "<ul>"
+                "<li>Addition (+): Press the '+' key.</li>"
+                "<li>Subtraction (-): Press the '-' key.</li>"
+                "<li>Multiplication (×): Press the '*' key.</li>"
+                "<li>Division (÷): Press the '/' key.</li>"
+                "<li>Power (^): Press the '^' key.</li>"
+                "<li>Logarithm (log): Type 'log' followed by the base, a comma, and the number, e.g., 'log10,100'.</li>"
+                "</ul>"
+                "<li>To clear the input field, press the 'C' key.</li>"
+                "<li>To evaluate the expression, press the 'Enter' key.</li>"
+                "</ul>"),
+            QLabel("<p>You can move the calculator window by clicking and dragging the title bar. To close the tutorial window, click the 'X' button in the upper right corner or press the 'Esc' key on your keyboard.</p>"),
+        ]
+
+        
+        for label in self.tutorial_text:
+            label.setWordWrap(True)
+            label.setAlignment(Qt.AlignJustify)
+            self.scroll_area_layout.addWidget(label)
+       
         self.layout.addStretch()
 
     def _createTitleBar(self):
         self.title_bar = QWidget(self)
-        self.title_bar.setStyleSheet("background-color: #202020;")
+        self.title_bar.setStyleSheet("""
+    background-color: #303030;
+    border: none;
+""")
         self.title_bar.setFixedHeight(40)
         self.title_bar_layout = QHBoxLayout()
+        self.title_bar_layout.setContentsMargins(0, 0, 0, 0)
         self.title_label = QLabel("Calculator Tutorial")
-        self.title_label.setStyleSheet("color: white; font-size: 16px;")
+        self.title_label.setStyleSheet("color: white; font-family: 'Segoe UI'; font-size: 16px;")
         self.title_bar_layout.addWidget(self.title_label)
+        self.title_bar_layout.addStretch(1)
         self.close_button = QPushButton("X")
         self.close_button.setStyleSheet("""
             QPushButton {
-                color: white;
-                background-color: #202020;
-                border: none;
-                font-size: 18px;
-            }
-            QPushButton:hover {
-                background-color: rgb(200, 50, 50);
-            }
+            color: white;
+            background-color: transparent;
+            border: none;
+            font-family: 'Segoe UI';
+            font-size: 18px;
+        }
+        QPushButton:hover {
+            background-color: rgb(200, 50, 50);
+        }
         """)
+        
         self.close_button.setFixedSize(40, 30)
         self.close_button.clicked.connect(self.close)
         self.title_bar_layout.addWidget(self.close_button)
