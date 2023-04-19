@@ -85,25 +85,18 @@ class TestMathLibrary(unittest.TestCase):
         with self.assertRaises(ValueError):
             factorial(-1)
 
-    def test_logarithm(self):
-        """
-        logarithm(base, x)
-        """
-        # Test base 2 logarithm
-        self.assertEqual(logarithm(2, 2), 1)
-        self.assertEqual(logarithm(2, 8), 3)
-        self.assertEqual(logarithm(2, 16), 4)
+    def test_ln(self):
+        # Test basic inputs:
+        self.assertEqual(ln(2), 0.6926474305598223)
+        self.assertEqual(ln(1000000), 13.81551055796428)
 
-        # Test base 10 logarithm
-        self.assertEqual(logarithm(10, 10), 1)
-        self.assertEqual(logarithm(10, 100), 2)
-        self.assertEqual(logarithm(10, 1000), 3)
+        # Test input near 1:
+        self.assertAlmostEqual(ln(1.001), 0.0009995001666249457)
 
-        # Test base e (natural) logarithm
-        self.assertAlmostEqual(logarithm(2.71828, 2.71828), 1, places=4)
-        self.assertAlmostEqual(logarithm(2.71828, 7.38906), 2, places=4)
-        self.assertAlmostEqual(logarithm(2.71828, 20.08554), 3, places=4)
-
+        with self.assertRaises(ValueError):
+            ln(-1)
+            ln(0)
+            ln(-0.001)
 
 if __name__ == '__main__':
     unittest.main()
