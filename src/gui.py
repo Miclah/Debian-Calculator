@@ -18,9 +18,9 @@
 
 import sys
 import locale
-from PyQt5.QtWidgets import QDialog, QTextEdit, QVBoxLayout, QScrollArea, QGraphicsDropShadowEffect
+from PyQt5.QtWidgets import QDialog, QTextEdit, QVBoxLayout, QScrollArea, QGraphicsDropShadowEffect, QGraphicsOpacityEffect
 from PyQt5.QtWidgets import QApplication, QMainWindow, QLineEdit, QPushButton, QVBoxLayout, QWidget, QGridLayout, QLabel, QHBoxLayout, QSizePolicy
-from PyQt5.QtGui import QFont
+from PyQt5.QtGui import QFont, QColor, QPalette
 from PyQt5.QtCore import Qt, QSize
 from math_lib import add, sub, mul, div
 from extended_math_lib import factorial, power, sqrt, logarithm
@@ -35,6 +35,16 @@ def custom_eval(expression):
         'log': logarithm
     }
 
+    single_operand_operations = {
+        'x!': factorial,
+        '√x': sqrt
+    }
+
+    for operator, func in single_operand_operations.items():
+        if operator in expression:
+            a = float(expression.replace(operator, ''))
+            return func(a)
+
     for operator, func in operations.items():
         if operator in expression:
             a, b = map(float, expression.split(operator))
@@ -48,8 +58,9 @@ class TutorialWindow(QDialog):
         super(TutorialWindow, self).__init__(parent)
         self.setModal(True)
         self.setWindowTitle("Tutorial")
-        self.setFixedSize(600, 500)
-        self.setWindowFlags(Qt.FramelessWindowHint | Qt.Dialog)  # Add Qt.Dialog flag
+        self.setMinimumSize(600, 410)
+        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.setWindowFlags(Qt.FramelessWindowHint | Qt.Dialog) 
 
         self.oldPos = None
 
@@ -58,6 +69,7 @@ class TutorialWindow(QDialog):
             QDialog {
                 background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
                                                 stop: 0 #303030, stop: 1 #505050);
+                border: 1px solid rgba(255, 255, 255, 50);
                 border-radius: 10px;
             }
             QScrollArea {
@@ -92,6 +104,8 @@ class TutorialWindow(QDialog):
             }
         ''')
         
+        
+        
         heading_label = QLabel("Using the Mouse:")
         heading_label.setProperty("heading", True)
 
@@ -111,8 +125,8 @@ class TutorialWindow(QDialog):
         self.scroll_area.setWidget(self.scroll_area_contents)
 
         self.scroll_area_layout = QVBoxLayout()
-        self.scroll_area_layout.setContentsMargins(20, 20, 20, 20)  # Add padding around the content
-        self.scroll_area_layout.setSpacing(10)  # Adjust the spacing value as needed
+        self.scroll_area_layout.setContentsMargins(30, 30, 30, 30)
+        self.scroll_area_layout.setSpacing(10)  
 
 
         self.scroll_area_contents.setLayout(self.scroll_area_layout)
@@ -164,9 +178,9 @@ class TutorialWindow(QDialog):
     def _createTitleBar(self):
         self.title_bar = QWidget(self)
         self.title_bar.setStyleSheet("""
-    background-color: #303030;
-    border: none;
-""")
+            background-color: none;
+            border: none;
+        """)
         self.title_bar.setFixedHeight(40)
         self.title_bar_layout = QHBoxLayout()
         self.title_bar_layout.setContentsMargins(0, 0, 0, 0)
@@ -182,10 +196,10 @@ class TutorialWindow(QDialog):
             border: none;
             font-family: 'Segoe UI';
             font-size: 18px;
-        }
-        QPushButton:hover {
-            background-color: rgb(200, 50, 50);
-        }
+            }
+            QPushButton:hover {
+                background-color: rgb(200, 50, 50);
+            }
         """)
         
         self.close_button.setFixedSize(40, 30)
@@ -208,15 +222,13 @@ class TutorialWindow(QDialog):
         if event.button() == Qt.LeftButton:
             self.oldPos = None
 
-                
-        
-
 class Calculator(QMainWindow):
     def __init__(self):
         super().__init__()
 
         self.setFixedSize(320, 480)
         self.setWindowFlags(Qt.FramelessWindowHint | Qt.Window)
+
 
         self.generalLayout = QVBoxLayout()
         self._centralWidget = QWidget(self)
@@ -228,16 +240,18 @@ class Calculator(QMainWindow):
         self._createButtons()
         self.new_input = False
         self.x_y_base = None
-        self.display.textChanged.connect(self._adjust_font_size)  # Add this line
+        self.display.textChanged.connect(self._adjust_font_size)
 
         self.show()
+
+    
 
     def _createTitleBar(self):
         self.titleBar = QWidget()
         self.titleBar.setFixedHeight(30)
 
         titleBarLayout = QHBoxLayout()
-        titleBarLayout.setContentsMargins(0, 0, 0, 0)  # Add -1 to the bottom margin
+        titleBarLayout.setContentsMargins(0, 0, 0, 0)  
         titleBarLayout.setSpacing(1)
 
         self.titleLabel = QLabel("Calculator")
@@ -246,10 +260,12 @@ class Calculator(QMainWindow):
 
         titleBarLayout.addStretch()
         
+
+        
         self.helpButton = QPushButton("?")
         self.helpButton.setFixedSize(40, 30)
-        self.helpButton.clicked.connect(self.showTutorial) # Use the showTutorial method you already have
-        self.helpButton.setStyleSheet("background-color: transparent; border: none;")  # Set the button to be transparent and blend in with the title bar
+        self.helpButton.clicked.connect(self.showTutorial) 
+        self.helpButton.setStyleSheet("background-color: transparent; border: none;")  
         titleBarLayout.addWidget(self.helpButton)
 
         self.minimizeButton = QPushButton("-")
@@ -263,7 +279,6 @@ class Calculator(QMainWindow):
         self.closeButton.clicked.connect(self.close)
         titleBarLayout.addWidget(self.closeButton)
 
-        # Adjusting the vertical position of the minimize button and the X button
         titleBarLayout.addSpacing(10)
 
         self.helpButton.setStyleSheet("""
@@ -380,14 +395,15 @@ class Calculator(QMainWindow):
 
             
         """)
-        self.display.setMaxLength(21)  # Limit to 21 characters, considering commas
+        self.display.setMaxLength(21)  
         self.display.setContentsMargins(0, 0, 0, 0)
 
     def _createButtons(self):
         self.buttons = {}
         buttonsLayout = QGridLayout()
-        buttonsLayout.setHorizontalSpacing(1)  # Add horizontal spacing between buttons
-        buttonsLayout.setVerticalSpacing(3)  # Add vertical spacing between buttons
+        buttonsLayout.setHorizontalSpacing(1)  
+        buttonsLayout.setVerticalSpacing(3)  
+        
         
         
         buttons = {
@@ -398,23 +414,23 @@ class Calculator(QMainWindow):
             "x!": (1, 0),
             "x^y": (1, 1),
             "√x": (1, 2),
-            "log": (1, 3),  # Add the log button
+            "log": (1, 3), 
             "7": (2, 0),
             "8": (2, 1),
             "9": (2, 2),
-            "÷": (2, 3),  # Move the ÷ button one row down
+            "÷": (2, 3),  
             "4": (3, 0),
             "5": (3, 1),
             "6": (3, 2),
-            "x": (3, 3),  # Move the x button one row down
+            "×": (3, 3),
             "1": (4, 0),
             "2": (4, 1),
             "3": (4, 2),
-            "-": (4, 3),  # Move the - button one row down
-            ".": (5, 0),  # Move the . button to the position of the ? button
+            "-": (4, 3),  
+            ".": (5, 0),  
             "0": (5, 1),
-            "=": (5, 2),  # Move the = button one column to the right
-            "+": (5, 3),  # Move the + button one row down
+            "=": (5, 2),  
+            "+": (5, 3),  
         }
         
         self.tutorialButton = QPushButton("?")
@@ -425,7 +441,7 @@ class Calculator(QMainWindow):
         for btnText, pos in buttons.items():
             button = QPushButton(btnText)
             button.setFont(QFont("Arial", 14, QFont.Bold))
-            button.setFixedSize(72, 54)  # Set a fixed size for the buttons (5% smaller)
+            button.setFixedSize(72, 54) 
             button.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
             if btnText in {'-', '+', '÷', '×'}:
                 button.setProperty('operator', True)
@@ -446,12 +462,12 @@ class Calculator(QMainWindow):
                     QPushButton:pressed {
                         background-color: #5698C8;
                     }
-                """)  # Set the "=" button style
+                """)  
 
             if btnText in {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '?'}:
                 button.setProperty('number', True)
 
-            elif btnText in {'(', ')', 'x!', 'x^y', '√x', 'C', 'DEL', '-', '+', '÷', 'x', 'log'}:
+            elif btnText in {'(', ')', 'x!', 'x^y', '√x', 'C', 'DEL', '-', '+', '÷', '×', 'log'}:
                 button.setProperty('other_button', True)
 
             button.clicked.connect(lambda ch, btn=btnText: self._buttonClicked(btn))
@@ -465,11 +481,22 @@ class Calculator(QMainWindow):
         self.generalLayout.addLayout(buttonsLayout)
 
         
+    def mousePressEvent(self, event):
+        if event.button() == Qt.LeftButton:
+            self.oldPos = event.globalPos()
 
+    def mouseMoveEvent(self, event):
+        if event.buttons() == Qt.LeftButton and self.oldPos is not None:
+            delta = event.globalPos() - self.oldPos
+            self.move(self.x() + delta.x(), self.y() + delta.y())
+            self.oldPos = event.globalPos()
+
+    def mouseReleaseEvent(self, event):
+        if event.button() == Qt.LeftButton:
+            self.oldPos = None
 
     def _buttonClicked(self, button):
         
-        button = self.sender().text()
         print(f"Button clicked: {button}") 
         
         if button in {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", ".", "(", ")", "÷", "×", "-", "+"}:
@@ -478,7 +505,7 @@ class Calculator(QMainWindow):
             current_length = len(self.display.text())
             if current_length > 15:
                 new_font_size = 30 - (current_length - 15) * 2
-                new_font_size = max(new_font_size, 10)  # Minimum font size
+                new_font_size = max(new_font_size, 10)  
                 self.display.setStyleSheet(f"""
                     QLineEdit {{
                         background-color: #202020;
@@ -500,14 +527,14 @@ class Calculator(QMainWindow):
                 current_length = len(self.display.text())
                 if current_length > 15:
                     new_font_size = 30 - (current_length - 15) * 2
-                    new_font_size = max(new_font_size, 10)  # Minimum font size
+                    new_font_size = max(new_font_size, 10) 
                     self.display.setStyleSheet(f"""
                         QLineEdit {{
                             background-color: #202020;
                             color: white;
                             font-size: {new_font_size}px;
                             border: none;
-                            padding: 0 10px;
+                            padding: 0 10px
                         }}
                     """)
 
@@ -519,8 +546,7 @@ class Calculator(QMainWindow):
         elif button == "C":
             self.display.clear()
             
-        elif button == "⌫":
-            self.display.backspace()
+        
             
         elif button == "DEL":
             self.display.backspace()
@@ -530,7 +556,8 @@ class Calculator(QMainWindow):
                 text = self.display.text()
                 number = int(text)
                 if number > 170:
-                    raise ValueError("Exceeds limit for x!")
+                    self.display.setText("Exceeds limit for x!")
+                    return
                 result = factorial(number)
                 formatted_result = self._format_number(str(result))
                 self.display.setText(formatted_result)
@@ -539,7 +566,7 @@ class Calculator(QMainWindow):
                 current_length = len(self.display.text())
                 if current_length > 15:
                     new_font_size = 30 - (current_length - 15) * 2
-                    new_font_size = max(new_font_size, 10)  # Minimum font size
+                    new_font_size = max(new_font_size, 10)  
                     self.display.setStyleSheet(f"""
                         QLineEdit {{
                             background-color: #202020;
@@ -568,9 +595,10 @@ class Calculator(QMainWindow):
         elif button == "√x":
             try:
                 text = self.display.text()
-                if float(text) < 0:
-                    raise ValueError("Cannot compute square root of a negative number")
-                result = sqrt(float(text))
+                number = float(text)
+                if number < 0:
+                    raise ValueError("Cannot compute square root of negative number")
+                result = sqrt(number)
                 formatted_result = self._format_number(str(result))
                 self.display.setText(formatted_result)
                 self._adjust_font_size()
@@ -578,7 +606,7 @@ class Calculator(QMainWindow):
                 current_length = len(self.display.text())
                 if current_length > 15:
                     new_font_size = 30 - (current_length - 15) * 2
-                    new_font_size = max(new_font_size, 10)  # Minimum font size
+                    new_font_size = max(new_font_size, 10)
                     self.display.setStyleSheet(f"""
                         QLineEdit {{
                             background-color: #202020;
@@ -590,40 +618,39 @@ class Calculator(QMainWindow):
                     """)
             except Exception as e:
                 self.display.setText(str(e))
+
 
                 
         elif button == "log":
-            try:
-                text = self.display.text()
-                if ',' not in text:
-                    self.display.setText("Error: Please enter both base and number separated by a comma")
-                else:
-                    self.display.insert("log")
-                base, number = text.split(',')
-                result = logarithm(float(base), float(number))
-                formatted_result = self._format_number(str(result))
-                self.display.setText(formatted_result)
-                self._adjust_font_size()
+            text = self.display.text()
+            if 'log' not in text:
+                self.display.insert("log")
+            else:
+                try:
+                    base, number = text.split('log')
+                    result = logarithm(float(base), float(number))
+                    formatted_result = self._format_number(str(result))
+                    self.display.setText(formatted_result)
+                    self._adjust_font_size()
 
-                current_length = len(self.display.text())
-                if current_length > 15:
-                    new_font_size = 30 - (current_length - 15) * 2
-                    new_font_size = max(new_font_size, 10)  # Minimum font size
-                    self.display.setStyleSheet(f"""
-                        QLineEdit {{
-                            background-color: #202020;
-                            color: white;
-                            font-size: {new_font_size}px;
-                            border: none;
-                            padding: 0 10px;
-                        }}
-                    """)
+                    current_length = len(self.display.text())
+                    if current_length > 15:
+                        new_font_size = 30 - (current_length - 15) * 2
+                        new_font_size = max(new_font_size, 10)
+                        self.display.setStyleSheet(f"""
+                            QLineEdit {{
+                                background-color: #202020;
+                                color: white;
+                                font-size: {new_font_size}px;
+                                border: none;
+                                padding: 0 10px;
+                            }}
+                        """)
 
-            except Exception as e:
-                self.display.setText(str(e))
+                except Exception as e:
+                    self.display.setText(str(e))
 
-                
-        
+
 
 
     def keyPressEvent(self, event):
@@ -631,17 +658,25 @@ class Calculator(QMainWindow):
 
         if key in '0123456789.+-/*()':
             self.display.insert(key)
-            self._adjust_font_size()  # Add this line
-        elif event.key() == Qt.Key_Enter or event.key() == Qt.Key_Return:
+            self._adjust_font_size()  
+        elif event.key() in {Qt.Key_Enter, Qt.Key_Return, Qt.Key_Enter - 1}:
             self._buttonClicked("=")
         elif key.lower() == "c":
             self._buttonClicked("C")
         elif event.key() == Qt.Key_Backspace:
-            self._buttonClicked("⌫")
-        elif event.key() == Qt.Key_Delete:
-            self._buttonClicked("CE")
+            self._buttonClicked("DEL")
+        elif event.key() == Qt.Key_Asterisk:
+            self._buttonClicked("×")
+        elif key.lower() == "s":
+            self._buttonClicked("√x")
+        elif key.lower() == "f":
+            self._buttonClicked("x!")
+        elif key.lower() == "l":
+            self._buttonClicked("log")
+        elif key.lower() == "p":
+            self._buttonClicked("x^y")
 
-            
+  
     def showTutorial(self):
         print("Showing tutorial window")
         tutorialWindow = TutorialWindow(self)
@@ -671,14 +706,15 @@ class Calculator(QMainWindow):
             new_font_size = 23
         
         else:
-            new_font_size = 30
+            new_font_size = 20
+
         
         self.display.setStyleSheet(f"""
             QLineEdit {{
                 background-color: #202020;
                 color: white;
                 font-size: {new_font_size}px;
-                border: none;
+                border: 2px solid white;
                 padding: 0 10px;
             }}
         """)
@@ -689,4 +725,3 @@ if __name__ == "__main__":
     app.setStyle("Fusion")
     calc = Calculator()
     sys.exit(app.exec_())
-
