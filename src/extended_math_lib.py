@@ -74,29 +74,38 @@ def sqrt(n):
             guess = new_guess
 
 ##
-# @brief: Logarithm
-# @param base: Base of Logarithm
-# @param x: First operand
-# @return: Returns Logarithm of X by base
+# @brief: Compute the natural logarithm (ln) of x.
+# @param x: The input value.
+# @param num_terms: The number of terms to use in the Taylor series expansion.
+#                      Defaults to 1000.
+# @return: The natural logarithm of x.
 #
-def logarithm(base, x):
+def ln(x, num_terms=1000):
     """
-    Calculates logarithm of x with the specified base.
+    Compute the natural logarithm (ln) of x.
     """
-    if base <= 0 or x <= 0:
-        raise ValueError("Both base and x must be positive")
-    elif base == 1:
-        raise ValueError("Base cannot be equal to 1")
-    elif x < base:
-        raise ValueError("Base must be less than x")
-    else:
-        result = 0
-        while x >= base:
-            x /= base
-            result += 1
+    if x <= 0:
+        raise ValueError("Input must be positive.")
+    if x == 1:
+        return 0.0
+    if x < 1:
+        return -ln(1 / x, num_terms=num_terms)
 
-        while x < 1:
-            x *= base
-            result -= 1
+    # Use the Taylor series expansion of ln(1+x) around x=0:
+    if x > 2:
+        y = x ** (1 / 2)
+        return ln(y, num_terms=num_terms) + ln(x / y, num_terms=num_terms)
 
-        return result + (x - 1) / (x + 1)
+    # Compute the terms of the Taylor series expansion:
+    total = 0.0
+    power = x - 1
+    for n in range(1, num_terms + 1):
+        term = power / n
+        if n % 2 == 0:
+            term = -term
+        total += term
+        power *= (x - 1)
+    return total
+
+
+
