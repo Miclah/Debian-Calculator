@@ -9,17 +9,13 @@
 #TODO: 
 # make a white outline around the calculator and tutorial window. 
 # add the white line around the input/output window
-# sqrt x crashes the calculator,
-# tutorial window still has some things left to tweak
 # () sometimes cause a problem with calculations
 # make an error handling for pressing function twice/without input(for example x! displays: invalid literal for i instead of no input or something) the same goes for other functions
 # no idea how to handle log, has to figure something out
-# Make light mode and dark mode
 
 import sys
 import re
-import locale
-from PyQt5.QtWidgets import QDialog, QTextEdit, QVBoxLayout, QScrollArea, QGraphicsDropShadowEffect, QGraphicsOpacityEffect
+from PyQt5.QtWidgets import QDialog, QTextEdit, QVBoxLayout, QScrollArea
 from PyQt5.QtWidgets import QApplication, QMainWindow, QLineEdit, QPushButton, QVBoxLayout, QWidget, QGridLayout, QLabel, QHBoxLayout, QSizePolicy
 from PyQt5.QtGui import QFont, QColor, QPalette
 from PyQt5.QtCore import Qt, QSize
@@ -27,6 +23,17 @@ from math_lib import add, sub, mul, div
 from extended_math_lib import factorial, power, sqrt, ln
 
 def custom_eval(expression):
+    def apply_operator(operators, values):
+        operator = operators.pop()
+        right = values.pop()
+        left = values.pop()
+        result = operations[operator](left, right)
+        values.append(result)
+
+    def greater_precedence(op1, op2):
+        precedences = {'+': 1, '-': 1, '×': 2, '÷': 2, '^': 3}
+        return precedences[op1] > precedences[op2]
+
     operations = {
         '+': add,
         '-': sub,
@@ -38,26 +45,45 @@ def custom_eval(expression):
     single_operand_operations = {
         'x!': factorial,
         '√x': sqrt,
-        'ln(': ln
+        'ln': ln
     }
 
-    for operator, func in single_operand_operations.items():
-        if operator in expression:
-            a = float(re.sub(r'[^\d.-]', '', expression))
-            return func(a)
+    match = re.search(r'\d+\.?\d*', expression)
+    if match:
+        for operator, func in single_operand_operations.items():
+            if operator + '(' in expression:
+                a = float(match.group(0))
+                if ')' in expression and expression.index(')') > expression.index(operator + '('):
+                    return func(a)
+                else:
+                    raise ValueError("Incorrect input format.")
 
-    for operator, func in operations.items():
-        if operator in expression:
-            a, b = map(float, re.split(r'(?<!e)' + re.escape(operator), expression))
-            try:
-                result = func(a, b)
-                if operator == '^' and not -1e6 < result < 1e6:
-                    raise ValueError("Result is too large")
-                return result
-            except ValueError as e:
-                return str(e)
+    tokens = re.findall(r'-?\d+\.?\d*|[\+\-\×\÷\^]|\(|\)', expression)
+    values = []
+    operators = []
 
-    return 0
+    for token in tokens:
+        if token.isdigit() or '.' in token:
+            values.append(float(token))
+        elif token == '(':
+            operators.append(token)
+        elif token == ')':
+            while operators[-1] != '(':
+                apply_operator(operators, values)
+            operators.pop()
+        else:
+            while (operators and operators[-1] != '(' and
+                    greater_precedence(operators[-1], token)):
+                apply_operator(operators, values)
+            operators.append(token)
+
+    while operators:
+        apply_operator(operators, values)
+
+    result = values[0]
+    if abs(result) > 1e300:
+        raise ValueError("Result is too large.")
+    return result
 
 
 class TutorialWindow(QDialog):
@@ -341,6 +367,7 @@ class Calculator(QMainWindow):
         self.setStyleSheet("""
            QWidget {
                 background-color: #202020;
+                border-radius: 5px;
             }
 
             QPushButton {
@@ -375,7 +402,8 @@ class Calculator(QMainWindow):
                 background-color: #202020;
                 color: white;
                 font-size: 34px;
-                border: none;
+                border: 2px solid white;
+                border-radius: 0;
                 padding: 0 10px;
             }
 
