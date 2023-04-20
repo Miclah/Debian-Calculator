@@ -17,38 +17,45 @@
 # Make light mode and dark mode
 
 import sys
+import re
 import locale
 from PyQt5.QtWidgets import QDialog, QTextEdit, QVBoxLayout, QScrollArea, QGraphicsDropShadowEffect, QGraphicsOpacityEffect
 from PyQt5.QtWidgets import QApplication, QMainWindow, QLineEdit, QPushButton, QVBoxLayout, QWidget, QGridLayout, QLabel, QHBoxLayout, QSizePolicy
 from PyQt5.QtGui import QFont, QColor, QPalette
 from PyQt5.QtCore import Qt, QSize
 from math_lib import add, sub, mul, div
-from extended_math_lib import factorial, power, sqrt, logarithm
+from extended_math_lib import factorial, power, sqrt, ln
 
 def custom_eval(expression):
     operations = {
         '+': add,
         '-': sub,
         '×': mul,
-        '÷': div,   
+        '÷': div,
         '^': power,
-        'log': logarithm
     }
 
     single_operand_operations = {
         'x!': factorial,
-        '√x': sqrt
+        '√x': sqrt,
+        'ln(': ln
     }
 
     for operator, func in single_operand_operations.items():
         if operator in expression:
-            a = float(expression.replace(operator, ''))
+            a = float(re.sub(r'[^\d.-]', '', expression))
             return func(a)
 
     for operator, func in operations.items():
         if operator in expression:
-            a, b = map(float, expression.split(operator))
-            return func(a, b)
+            a, b = map(float, re.split(r'(?<!e)' + re.escape(operator), expression))
+            try:
+                result = func(a, b)
+                if operator == '^' and not -1e6 < result < 1e6:
+                    raise ValueError("Result is too large")
+                return result
+            except ValueError as e:
+                return str(e)
 
     return 0
 
@@ -414,7 +421,7 @@ class Calculator(QMainWindow):
             "x!": (1, 0),
             "x^y": (1, 1),
             "√x": (1, 2),
-            "log": (1, 3), 
+            "ln": (1, 3), 
             "7": (2, 0),
             "8": (2, 1),
             "9": (2, 2),
@@ -467,7 +474,7 @@ class Calculator(QMainWindow):
             if btnText in {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '?'}:
                 button.setProperty('number', True)
 
-            elif btnText in {'(', ')', 'x!', 'x^y', '√x', 'C', 'DEL', '-', '+', '÷', '×', 'log'}:
+            elif btnText in {'(', ')', 'x!', 'x^y', '√x', 'C', 'DEL', '-', '+', '÷', '×', 'ln'}:
                 button.setProperty('other_button', True)
 
             button.clicked.connect(lambda ch, btn=btnText: self._buttonClicked(btn))
@@ -553,7 +560,9 @@ class Calculator(QMainWindow):
             
         elif button == "x!":
             try:
-                text = self.display.text()
+                text = self.display.text().replace("x!", "")
+                if not text:
+                    return
                 number = int(text)
                 if number > 170:
                     self.display.setText("Exceeds limit for x!")
@@ -561,7 +570,9 @@ class Calculator(QMainWindow):
                 result = factorial(number)
                 formatted_result = self._format_number(str(result))
                 self.display.setText(formatted_result)
-                self._adjust_font_size()
+                self._adjust_font_size()    
+                
+                
 
                 current_length = len(self.display.text())
                 if current_length > 15:
@@ -576,8 +587,10 @@ class Calculator(QMainWindow):
                             padding: 0 10px;
                         }}
                     """)
+            except ValueError:
+                self.display.setText("Invalid input for x!")
             except Exception as e:
-                self.display.setText(str(e))
+                self.display.setText(str(e))    
 
 
 
@@ -594,10 +607,10 @@ class Calculator(QMainWindow):
 
         elif button == "√x":
             try:
-                text = self.display.text()
+                text = self.display.text().replace("√x", "")
+                if not text:
+                    return
                 number = float(text)
-                if number < 0:
-                    raise ValueError("Cannot compute square root of negative number")
                 result = sqrt(number)
                 formatted_result = self._format_number(str(result))
                 self.display.setText(formatted_result)
@@ -616,19 +629,25 @@ class Calculator(QMainWindow):
                             padding: 0 10px;
                         }}
                     """)
-            except Exception as e:
+            except ValueError as e:
                 self.display.setText(str(e))
-
+            except Exception as e:
+                self.display.setText("Invalid input for √x")
 
                 
-        elif button == "log":
+        elif button == "ln":
             text = self.display.text()
-            if 'log' not in text:
-                self.display.insert("log")
+            if 'ln(' not in text:
+                self.display.insert("ln()")
+                cursor_position = self.display.cursorPosition()
+                self.display.setCursorPosition(cursor_position - 1)
+            elif ')' not in text:
+                self.display.insert(")")
+                cursor_position = self.display.cursorPosition()
+                self.display.setCursorPosition(cursor_position)
             else:
                 try:
-                    base, number = text.split('log')
-                    result = logarithm(float(base), float(number))
+                    result = custom_eval(text)
                     formatted_result = self._format_number(str(result))
                     self.display.setText(formatted_result)
                     self._adjust_font_size()
@@ -646,7 +665,6 @@ class Calculator(QMainWindow):
                                 padding: 0 10px;
                             }}
                         """)
-
                 except Exception as e:
                     self.display.setText(str(e))
 
@@ -672,7 +690,7 @@ class Calculator(QMainWindow):
         elif key.lower() == "f":
             self._buttonClicked("x!")
         elif key.lower() == "l":
-            self._buttonClicked("log")
+            self._buttonClicked("ln")
         elif key.lower() == "p":
             self._buttonClicked("x^y")
 
