@@ -3,15 +3,15 @@
 # @brief: GUI for IVS project 2.
 # @author Michal Petrán (xpetra32)
 # @Created: 22-03-2023
-# @Last Modified: 09-04-2023
+# @Last Modified: 23-04-2023
 ##
 
 #TODO: 
 # make a white outline around the calculator and tutorial window. 
 # add the white line around the input/output window
 # () sometimes cause a problem with calculations
-# make an error handling for pressing function twice/without input(for example x! displays: invalid literal for i instead of no input or something) the same goes for other functions
-# no idea how to handle log, has to figure something out
+
+
 
 import sys
 import re
@@ -22,24 +22,57 @@ from PyQt5.QtCore import Qt, QSize
 from math_lib import add, sub, mul, div
 from extended_math_lib import factorial, power, sqrt, ln
 
+def is_valid_parentheses(s):
+    stack = []
+    for c in s:
+        if c == '(':
+            stack.append(c)
+        elif c == ')':
+            if not stack:
+                return False
+            stack.pop()
+    return not stack
+
 def custom_eval(expression):
     def apply_operator(operators, values):
         operator = operators.pop()
-        right = values.pop()
-        left = values.pop()
-        result = operations[operator](left, right)
+        if operator == 'u-':
+            value = values.pop()
+            result = -value
+        else:
+            right = values.pop()
+            left = values.pop()
+            if operator == '^':
+                if right < 0 and left > 0:
+                    raise ValueError("Negative exponents are not supported.")
+                if right < 0:
+                    raise ValueError("Negative exponents are not supported.")
+                if left < 0 and int(right) % 2 != 0:
+                    result = -power(-left, right)
+                else:
+                    result = power(left, right)
+
+            elif operator == '-':
+                result = left - right
+            else:
+                result = operations[operator](left, right)
+        if isinstance(result, float) and result.is_integer():
+            result = int(result)
         values.append(result)
 
+
     def greater_precedence(op1, op2):
-        precedences = {'+': 1, '-': 1, '×': 2, '÷': 2, '^': 3}
-        return precedences[op1] > precedences[op2]
+        precedences = {'+': 1, '-': 1, '×': 2, '÷': 2, '^': 3, 'u-': 4}
+        return precedences[op1] >= precedences[op2]
+
+
 
     operations = {
         '+': add,
         '-': sub,
         '×': mul,
         '÷': div,
-        '^': power,
+        '^': lambda x, y: power(x, y) if x > 0 or (x < 0 and y >= 0 and int(y) % 2 == 0) else -power(-x, y) if x < 0 and y >= 0 and int(y) % 2 != 0 else ValueError("Negative exponents are not supported."),
     }
 
     single_operand_operations = {
@@ -48,27 +81,37 @@ def custom_eval(expression):
         'ln': ln
     }
 
-    match = re.search(r'\d+\.?\d*', expression)
-    if match:
+    if not re.match(r'^\s*(\()?([-+]?(\d+(\.\d+)?|\.\d+)|\()+(\s*[\+\-×÷\^]\s*((-?\d+(\.\d+)?|\.\d+)|\())*\s*\)?$', expression) or not is_valid_parentheses(expression) or re.search(r'\d+(ln|√x|x!)', expression) or re.search(r'(ln|√x|x!)\d+', expression) or re.search(r'\d+\s*(ln|√x|x!)', expression):
         for operator, func in single_operand_operations.items():
             if operator + '(' in expression:
-                a = float(match.group(0))
                 if ')' in expression and expression.index(')') > expression.index(operator + '('):
-                    return func(a)
+                    # Extract the content between the parenthesis
+                    content = expression[expression.index(operator + '(') + len(operator + '('): expression.index(')')]
+                    # Check if the content is a valid number
+                    if re.match(r'-?\d+\.?\d*', content):
+                        a = float(content)
+                        return func(a)
+                    else:
+                        raise ValueError("Incorrect input format.")
                 else:
                     raise ValueError("Incorrect input format.")
+        raise ValueError("Incorrect input")
 
-    tokens = re.findall(r'-?\d+\.?\d*|[\+\-\×\÷\^]|\(|\)', expression)
+
+    tokens = re.findall(r'-?\d*\.\d+|-?\d+|[+\-×÷^()]|-\(', expression)
     values = []
     operators = []
 
     for token in tokens:
-        if token.isdigit() or '.' in token:
-            values.append(float(token))
+        if token == '-' and (not values or (operators and operators[-1] in '+-×÷^(')):
+            operators.append('u-')
+        elif token.replace('.', '', 1).isdigit():
+            value = float(token)
+            values.append(value)
         elif token == '(':
             operators.append(token)
         elif token == ')':
-            while operators[-1] != '(':
+            while operators and operators[-1] != '(':
                 apply_operator(operators, values)
             operators.pop()
         else:
@@ -77,13 +120,16 @@ def custom_eval(expression):
                 apply_operator(operators, values)
             operators.append(token)
 
+
     while operators:
         apply_operator(operators, values)
 
     result = values[0]
     if abs(result) > 1e300:
         raise ValueError("Result is too large.")
+
     return result
+
 
 
 class TutorialWindow(QDialog):
@@ -562,7 +608,7 @@ class Calculator(QMainWindow):
                 current_length = len(self.display.text())
                 if current_length > 15:
                     new_font_size = 30 - (current_length - 15) * 2
-                    new_font_size = max(new_font_size, 10) 
+                    new_font_size = max(new_font_size, 10)
                     self.display.setStyleSheet(f"""
                         QLineEdit {{
                             background-color: #202020;
@@ -572,10 +618,10 @@ class Calculator(QMainWindow):
                             padding: 0 10px
                         }}
                     """)
-
-
-            except Exception as e:
+            except ValueError as e:
                 self.display.setText(str(e))
+            except Exception as e:
+                self.display.setText("Error: " + str(e))
 
                 
         elif button == "C":
@@ -640,6 +686,9 @@ class Calculator(QMainWindow):
                     return
                 number = float(text)
                 result = sqrt(number)
+                if not isinstance(result, (int, float)):
+                    self.display.setText("Invalid input for √x")
+                    return
                 formatted_result = self._format_number(str(result))
                 self.display.setText(formatted_result)
                 self._adjust_font_size()
@@ -702,17 +751,19 @@ class Calculator(QMainWindow):
     def keyPressEvent(self, event):
         key = event.text()
 
-        if key in '0123456789.+-/*()':
+        if key in '0123456789.+-()':
             self.display.insert(key)
             self._adjust_font_size()  
+        elif event.key() == Qt.Key_Asterisk:
+            self.display.insert('×')
+        elif event.key() == Qt.Key_Slash:
+            self.display.insert('÷')
         elif event.key() in {Qt.Key_Enter, Qt.Key_Return, Qt.Key_Enter - 1}:
             self._buttonClicked("=")
         elif key.lower() == "c":
             self._buttonClicked("C")
         elif event.key() == Qt.Key_Backspace:
             self._buttonClicked("DEL")
-        elif event.key() == Qt.Key_Asterisk:
-            self._buttonClicked("×")
         elif key.lower() == "s":
             self._buttonClicked("√x")
         elif key.lower() == "f":
@@ -750,11 +801,9 @@ class Calculator(QMainWindow):
             new_font_size = 28
         elif 20 < current_length <= 23:
             new_font_size = 23
-        
         else:
             new_font_size = 20
 
-        
         self.display.setStyleSheet(f"""
             QLineEdit {{
                 background-color: #202020;
@@ -762,8 +811,11 @@ class Calculator(QMainWindow):
                 font-size: {new_font_size}px;
                 border: 2px solid white;
                 padding: 0 10px;
+                text-align: right;
             }}
         """)
+
+
 
 
 if __name__ == "__main__":
