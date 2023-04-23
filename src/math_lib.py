@@ -6,7 +6,7 @@
 # @author for the basic math operations: Norman Babiak <xbabia01@fit.vutbr.cz>
 # @author for the more complex math functions:  <>
 # @Created: 2023-03-14
-# @Last Modified: 2023-03-14
+# @Last Modified: 2023-04-23
 ##
 
 # @brief: Basic math operations
@@ -47,5 +47,5 @@ def mul(a, b):
 #
 def div(a, b):
     if(b == 0):
-        raise ZeroDivisionError("Cannot divide by zero.")
+        raise ZeroDivisionError("Cannot divide by 0.")
     return a / b
