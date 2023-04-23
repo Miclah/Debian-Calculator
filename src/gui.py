@@ -1,5 +1,3 @@
-#!usr/bin/python
-
 ##
 # @file: gui.py
 # @brief: GUI for IVS project 2.
@@ -13,13 +11,15 @@
 # fix -
 
 
-import sys
-import re
-from PyQt5.QtWidgets import QApplication, QMainWindow, QLineEdit, QPushButton, QVBoxLayout, QWidget, QGridLayout, QLabel, QHBoxLayout, QSizePolicy, QDialog, QScrollArea
-from PyQt5.QtGui import QFont
-from PyQt5.QtCore import Qt
-from math_lib import add, sub, mul, div
-from extended_math_lib import factorial, power, sqrt, ln
+# Import necessary libraries
+import sys  # Provides access to some variables and functions used or maintained by the interpreter
+import re  # Provides regular expression support for pattern matching in strings
+from PyQt5.QtWidgets import QApplication, QMainWindow, QLineEdit, QPushButton, QVBoxLayout, QWidget, QGridLayout, QLabel, QHBoxLayout, QSizePolicy, QDialog, QScrollArea  # Import necessary PyQt5 widgets for building the GUI
+from PyQt5.QtGui import QFont  # Import QFont for setting font properties
+from PyQt5.QtCore import Qt  # Import QtCore for access to Qt's core non-GUI functionality
+from math_lib import add, sub, mul, div  # Import basic math functions from custom math_lib module
+from extended_math_lib import factorial, power, sqrt, ln  # Import extended math functions from custom extended_math_lib module
+
 
 def is_valid_parentheses(s):
     stack = []
@@ -60,9 +60,6 @@ def custom_eval(expression):
             values.append(result)
 
 
-
-
-
     def greater_precedence(op1, op2):
         precedences = {'+': 1, '-': 1, '×': 2, '÷': 2, '^': 3, 'u-': 4}
         return precedences[op1] >= precedences[op2]
@@ -87,7 +84,7 @@ def custom_eval(expression):
     if re.search(r'\d+\s*(ln|√x|x!)', expression):
         raise ValueError("Invalid input format.")
 
-    if not re.match(r'^\s*[\-+\(\)]?(\d+(\.\d+)?|\.\d+|\()+\s*([\+\-\*/\^\(\)]+\s*[\-+\(\)]?\s*(\d+(\.\d+)?|\.\d+|\()+\s*)*\)?$', expression) or not is_valid_parentheses(expression):
+    if not re.match(r'^\s*[\-+\(\)]?(\d+(\.\d+)?|\.\d+|\()+\s*([\+\-\*/\^\(\)×÷]+\s*[\-+\(\)]?\s*(\d+(\.\d+)?|\.\d+|\()+\s*)*\)?$', expression) or not is_valid_parentheses(expression):
         for operator, func in single_operand_operations.items():
             if operator + '(' in expression:
                 if ')' in expression and expression.index(')') > expression.index(operator + '('):
@@ -151,20 +148,25 @@ def custom_eval(expression):
 result = custom_eval("(10+5*3+10/1)*2")
 print(f"Final result: {result}")
 
+
+# Define the TutorialWindow class, which inherits from QDialog
 class TutorialWindow(QDialog):
+    # Initialize the TutorialWindow instance
     def __init__(self, parent=None):
+        # Call the QDialog constructor and pass the parent argument
         super(TutorialWindow, self).__init__(parent)
-        self.setModal(True)
-        self.setWindowTitle("Tutorial")
-        self.setMinimumSize(600, 410)
-        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        self.setWindowFlags(Qt.FramelessWindowHint | Qt.Dialog) 
-        self.display.setAlignment(Qt.AlignRight)
+        
+        # Configure the window properties
+        self.setModal(True) # Make the window modal (blocks input to other windows)
+        self.setWindowTitle("Tutorial") # Set the window title
+        self.setMinimumSize(600, 410) # Set the minimum window size
+        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding) # Set the size policy for the window
+        self.setWindowFlags(Qt.FramelessWindowHint | Qt.Dialog) # Set window flags to make it frameless and a dialog
 
 
-        self.oldPos = None
+        self.oldPos = None # Initialize oldPos to None; used for tracking mouse position when moving the window
 
-            
+        # Apply the window stylesheet for custom appearance
         self.setStyleSheet('''
             QDialog {
                 background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
@@ -209,14 +211,15 @@ class TutorialWindow(QDialog):
         heading_label = QLabel("Using the Mouse:")
         heading_label.setProperty("heading", True)
 
-        self.layout = QVBoxLayout()
+        # Create the window layout and add the title bar
+        self.layout = QVBoxLayout() # Set up the main window layout as QVBoxLayout
         self.layout.setContentsMargins(20, 10, 10, 20)
         self.layout.setSpacing(0)
-        self.setLayout(self.layout)
+        self.setLayout(self.layout) # Apply the layout to the window
 
-        self._createTitleBar()
-
+        self._createTitleBar() # Create and add the title bar to the layout
         
+        # Create the scroll area and its contents
         self.scroll_area = QScrollArea()
         self.scroll_area.setWidgetResizable(True)
         self.layout.addWidget(self.scroll_area)
@@ -231,6 +234,7 @@ class TutorialWindow(QDialog):
 
         self.scroll_area_contents.setLayout(self.scroll_area_layout)
 
+        # Create the scroll area and its contents
         self.tutorial_text = [
             QLabel("<p>Welcome to the Calculator Tutorial! This calculator is designed to be user-friendly and easy to use.</p>"),
             QLabel("<p>You can perform calculations using either your mouse or your keyboard. Let's go through each option.</p>"),
@@ -267,28 +271,37 @@ class TutorialWindow(QDialog):
             QLabel("<p>You can move the calculator window by clicking and dragging the title bar. To close the tutorial window, click the 'X' button in the upper right corner or press the 'Esc' key on your keyboard.</p>"),
         ]
 
-        
+        # Configure tutorial text labels and add them to the scroll area layout
         for label in self.tutorial_text:
-            label.setWordWrap(True)
-            label.setAlignment(Qt.AlignJustify)
-            self.scroll_area_layout.addWidget(label)
+            label.setWordWrap(True) # Enable word wrapping for the label
+            label.setAlignment(Qt.AlignJustify) # Set label alignment to justify
+            self.scroll_area_layout.addWidget(label) # Add the label to the scroll area layout
        
-        self.layout.addStretch()
+        self.layout.addStretch() # Add a stretch to the layout to fill any extra space
 
+    # Define the _createTitleBar method to create the custom title bar for the window
     def _createTitleBar(self):
-        self.title_bar = QWidget(self)
+        self.title_bar = QWidget(self) # Create a new QWidget instance for the title bar
+        
         self.title_bar.setStyleSheet("""
             background-color: none;
             border: none;
         """)
-        self.title_bar.setFixedHeight(40)
-        self.title_bar_layout = QHBoxLayout()
+        
+        self.title_bar.setFixedHeight(40)# Set a fixed height for the title bar
+        
+        # Create the title bar layout and configure its contents
+        self.title_bar_layout = QHBoxLayout() # Set up the title bar layout as QHBoxLayout
         self.title_bar_layout.setContentsMargins(0, 0, 0, 0)
-        self.title_label = QLabel("Calculator Tutorial")
+        self.title_label = QLabel("Calculator Tutorial") # Create a QLabel for the title text
+        
         self.title_label.setStyleSheet("color: white; font-family: 'Segoe UI'; font-size: 16px;")
-        self.title_bar_layout.addWidget(self.title_label)
-        self.title_bar_layout.addStretch(1)
-        self.close_button = QPushButton("X")
+        self.title_bar_layout.addWidget(self.title_label) # Add the title label to the title bar layout
+        self.title_bar_layout.addStretch(1) # Add a stretch to fill any extra space in the title bar layout
+        
+        # Create and configure the close button
+        self.close_button = QPushButton("X") # Create and configure the close button
+        
         self.close_button.setStyleSheet("""
             QPushButton {
             color: white;
@@ -302,47 +315,54 @@ class TutorialWindow(QDialog):
             }
         """)
         
-        self.close_button.setFixedSize(40, 30)
-        self.close_button.clicked.connect(self.close)
-        self.title_bar_layout.addWidget(self.close_button)
+        self.close_button.setFixedSize(40, 30) # Set a fixed size for the close button
+        self.close_button.clicked.connect(self.close) # Connect the button's click event to the close method
+        self.title_bar_layout.addWidget(self.close_button) # Add the close button to the title bar layout
+        
+        # Apply the title bar layout and add it to the main layout
         self.title_bar.setLayout(self.title_bar_layout)
         self.layout.addWidget(self.title_bar)
 
+    # Define the mousePressEvent method to handle mouse press events
     def mousePressEvent(self, event):
         if event.button() == Qt.LeftButton:
             self.oldPos = event.globalPos()
 
+    # Define the mouseMoveEvent method to handle mouse move events
     def mouseMoveEvent(self, event):
         if event.buttons() == Qt.LeftButton and self.oldPos is not None:
             delta = event.globalPos() - self.oldPos
             self.move(self.x() + delta.x(), self.y() + delta.y())
             self.oldPos = event.globalPos()
 
+    # Define the mouseReleaseEvent method to handle mouse release events
     def mouseReleaseEvent(self, event):
         if event.button() == Qt.LeftButton:
             self.oldPos = None
 
+# Define the Calculator class, which inherits from QMainWindow
 class Calculator(QMainWindow):
+    # Initialize the Calculator instance
     def __init__(self):
-        super().__init__()
+        super().__init__() # Call the QMainWindow constructor
 
-        self.setFixedSize(320, 480)
-        self.setWindowFlags(Qt.FramelessWindowHint | Qt.Window)
+        self.setFixedSize(320, 480)  # Set a fixed size for the calculator window
+        self.setWindowFlags(Qt.FramelessWindowHint | Qt.Window)  # Set window flags for a frameless window
 
 
-        self.generalLayout = QVBoxLayout()
-        self._centralWidget = QWidget(self)
-        self.setCentralWidget(self._centralWidget)
-        self._centralWidget.setLayout(self.generalLayout)
-        self._createTitleBar()
+        self.generalLayout = QVBoxLayout()  # Set up the main window layout as QVBoxLayout
+        self._centralWidget = QWidget(self)  # Create a central QWidget instance
+        self.setCentralWidget(self._centralWidget)  # Set the central widget for the QMainWindow
+        self._centralWidget.setLayout(self.generalLayout)  # Apply the layout to the central widget
+        self._createTitleBar()  # Create and add the title bar to the layout
 
-        self._createDisplay()
-        self._createButtons()
-        self.new_input = False
-        self.x_y_base = None
-        self.display.textChanged.connect(self._adjust_font_size)
+        self._createDisplay()  # Create the display for the calculator
+        self._createButtons()  # Create the buttons for the calculator
+        self.new_input = False  # Initialize a flag to track whether a new input is being entered
+        self.x_y_base = None  # Initialize a variable to store the x and y base values for certain operations
+        self.display.textChanged.connect(self._adjust_font_size)  # Connect the textChanged signal to adjust the font size
 
-        self.show()
+        self.show()  # Show the calculator window
 
     
 
