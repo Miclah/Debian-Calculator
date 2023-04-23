@@ -1,3 +1,5 @@
+#!usr/bin/python
+
 ##
 # @file: gui.py
 # @brief: GUI for IVS project 2.
@@ -7,18 +9,15 @@
 ##
 
 #TODO: 
-# make a white outline around the calculator and tutorial window. 
-# add the white line around the input/output window
 # () sometimes cause a problem with calculations
-
+# fix -
 
 
 import sys
 import re
-from PyQt5.QtWidgets import QDialog, QTextEdit, QVBoxLayout, QScrollArea
-from PyQt5.QtWidgets import QApplication, QMainWindow, QLineEdit, QPushButton, QVBoxLayout, QWidget, QGridLayout, QLabel, QHBoxLayout, QSizePolicy
-from PyQt5.QtGui import QFont, QColor, QPalette
-from PyQt5.QtCore import Qt, QSize
+from PyQt5.QtWidgets import QApplication, QMainWindow, QLineEdit, QPushButton, QVBoxLayout, QWidget, QGridLayout, QLabel, QHBoxLayout, QSizePolicy, QDialog, QScrollArea
+from PyQt5.QtGui import QFont
+from PyQt5.QtCore import Qt
 from math_lib import add, sub, mul, div
 from extended_math_lib import factorial, power, sqrt, ln
 
@@ -34,31 +33,34 @@ def is_valid_parentheses(s):
     return not stack
 
 def custom_eval(expression):
+    
+    
     def apply_operator(operators, values):
         operator = operators.pop()
         if operator == 'u-':
-            value = values.pop()
-            result = -value
+            right = values.pop()
+            result = -right
+            values.append(result)
         else:
             right = values.pop()
             left = values.pop()
             if operator == '^':
                 if right < 0 and left > 0:
-                    raise ValueError("Negative exponents are not supported.")
+                    raise ValueError("Neg. exp. not allowed")
                 if right < 0:
-                    raise ValueError("Negative exponents are not supported.")
+                    raise ValueError("Neg. exp. not allowed")
                 if left < 0 and int(right) % 2 != 0:
                     result = -power(-left, right)
                 else:
                     result = power(left, right)
-
-            elif operator == '-':
-                result = left - right
             else:
                 result = operations[operator](left, right)
-        if isinstance(result, float) and result.is_integer():
-            result = int(result)
-        values.append(result)
+            if isinstance(result, float) and result.is_integer():
+                result = int(result)
+            values.append(result)
+
+
+
 
 
     def greater_precedence(op1, op2):
@@ -80,33 +82,43 @@ def custom_eval(expression):
         '√x': sqrt,
         'ln': ln
     }
+    
+    
+    if re.search(r'\d+\s*(ln|√x|x!)', expression):
+        raise ValueError("Invalid input format.")
 
-    if not re.match(r'^\s*(\()?([-+]?(\d+(\.\d+)?|\.\d+)|\()+(\s*[\+\-×÷\^]\s*((-?\d+(\.\d+)?|\.\d+)|\())*\s*\)?$', expression) or not is_valid_parentheses(expression) or re.search(r'\d+(ln|√x|x!)', expression) or re.search(r'(ln|√x|x!)\d+', expression) or re.search(r'\d+\s*(ln|√x|x!)', expression):
+    if not re.match(r'^\s*[\-+\(\)]?(\d+(\.\d+)?|\.\d+|\()+\s*([\+\-\*/\^\(\)]+\s*[\-+\(\)]?\s*(\d+(\.\d+)?|\.\d+|\()+\s*)*\)?$', expression) or not is_valid_parentheses(expression):
         for operator, func in single_operand_operations.items():
             if operator + '(' in expression:
                 if ')' in expression and expression.index(')') > expression.index(operator + '('):
-                    # Extract the content between the parenthesis
                     content = expression[expression.index(operator + '(') + len(operator + '('): expression.index(')')]
-                    # Check if the content is a valid number
                     if re.match(r'-?\d+\.?\d*', content):
                         a = float(content)
                         return func(a)
-                    else:
-                        raise ValueError("Incorrect input format.")
+                    else:   
+                        raise ValueError("Invalid input format.")
                 else:
-                    raise ValueError("Incorrect input format.")
+                    raise ValueError("Invalid input format.")
         raise ValueError("Incorrect input")
+    
+    expression = expression.lstrip('+')
 
+    expression = re.sub(r'\s+', '', expression)
+    print(f"Expression without spaces: {expression}")
 
-    tokens = re.findall(r'-?\d*\.\d+|-?\d+|[+\-×÷^()]|-\(', expression)
+    tokens = re.findall(r'-?\d*\.\d+|-?\d+|[+\-×÷^()]', expression.replace(' ', ''))
+    print(f"Tokens: {tokens}")
     values = []
     operators = []
 
     for token in tokens:
         if token == '-' and (not values or (operators and operators[-1] in '+-×÷^(')):
-            operators.append('u-')
-        elif token.replace('.', '', 1).isdigit():
+            token = 'u-'
+        elif token.replace('.', '', 1).replace('-', '', 1).isdigit():
             value = float(token)
+            if operators and operators[-1] == 'u-':
+                value = -value
+                operators.pop()
             values.append(value)
         elif token == '(':
             operators.append(token)
@@ -116,9 +128,14 @@ def custom_eval(expression):
             operators.pop()
         else:
             while (operators and operators[-1] != '(' and
-                    greater_precedence(operators[-1], token)):
+                    greater_precedence(operators[-1], token) and token != 'u-'):
                 apply_operator(operators, values)
             operators.append(token)
+        print(f"Values: {values}")
+        print(f"Operators: {operators}")
+
+
+
 
 
     while operators:
@@ -128,9 +145,11 @@ def custom_eval(expression):
     if abs(result) > 1e300:
         raise ValueError("Result is too large.")
 
+
     return result
 
-
+result = custom_eval("(10+5*3+10/1)*2")
+print(f"Final result: {result}")
 
 class TutorialWindow(QDialog):
     def __init__(self, parent=None):
@@ -140,6 +159,8 @@ class TutorialWindow(QDialog):
         self.setMinimumSize(600, 410)
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.setWindowFlags(Qt.FramelessWindowHint | Qt.Dialog) 
+        self.display.setAlignment(Qt.AlignRight)
+
 
         self.oldPos = None
 
@@ -615,7 +636,7 @@ class Calculator(QMainWindow):
                             color: white;
                             font-size: {new_font_size}px;
                             border: none;
-                            padding: 0 10px
+                            padding: 0 10px 
                         }}
                     """)
             except ValueError as e:
