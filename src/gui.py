@@ -1,3 +1,5 @@
+
+
 ##
 # @file: gui.py
 # @brief: GUI for IVS project 2.
@@ -151,7 +153,10 @@ print(f"Final result: {result}")
 
 # Define the TutorialWindow class, which inherits from QDialog
 class TutorialWindow(QDialog):
-    # Initialize the TutorialWindow instance
+    ##
+    # @brief: Constructor of the TutorialWindow class, initializes the tutorial window
+    # @param parent: Parent widget, default is None
+    #
     def __init__(self, parent=None):
         # Call the QDialog constructor and pass the parent argument
         super(TutorialWindow, self).__init__(parent)
@@ -279,7 +284,9 @@ class TutorialWindow(QDialog):
        
         self.layout.addStretch() # Add a stretch to the layout to fill any extra space
 
-    # Define the _createTitleBar method to create the custom title bar for the window
+    ##
+    # @brief: Creates the custom title bar for the tutorial window
+    #
     def _createTitleBar(self):
         self.title_bar = QWidget(self) # Create a new QWidget instance for the title bar
         
@@ -323,26 +330,37 @@ class TutorialWindow(QDialog):
         self.title_bar.setLayout(self.title_bar_layout)
         self.layout.addWidget(self.title_bar)
 
-    # Define the mousePressEvent method to handle mouse press events
+    ##
+    # @brief: Handles mouse press event for dragging the window
+    # @param event: The QMouseEvent object
+    #
     def mousePressEvent(self, event):
         if event.button() == Qt.LeftButton:
             self.oldPos = event.globalPos()
 
-    # Define the mouseMoveEvent method to handle mouse move events
+    ##
+    # @brief: Handles mouse move event for dragging the window
+    # @param event: The QMouseEvent object
+    #
     def mouseMoveEvent(self, event):
         if event.buttons() == Qt.LeftButton and self.oldPos is not None:
             delta = event.globalPos() - self.oldPos
             self.move(self.x() + delta.x(), self.y() + delta.y())
             self.oldPos = event.globalPos()
 
-    # Define the mouseReleaseEvent method to handle mouse release events
+    ##
+    # @brief: Handles mouse release event for dragging the window
+    # @param event: The QMouseEvent object
+    #
     def mouseReleaseEvent(self, event):
         if event.button() == Qt.LeftButton:
             self.oldPos = None
 
 # Define the Calculator class, which inherits from QMainWindow
 class Calculator(QMainWindow):
-    # Initialize the Calculator instance
+    ##
+    # @brief: Initialize the Calculator instance
+    #
     def __init__(self):
         super().__init__() # Call the QMainWindow constructor
 
@@ -365,7 +383,9 @@ class Calculator(QMainWindow):
         self.show()  # Show the calculator window
 
     
-
+    ##
+    # @brief: Create the custom title bar for the calculator window
+    #
     def _createTitleBar(self):
         self.titleBar = QWidget()
         self.titleBar.setFixedHeight(30)
@@ -444,7 +464,9 @@ class Calculator(QMainWindow):
         self.titleBar.setLayout(titleBarLayout)
         self.generalLayout.addWidget(self.titleBar)
         
-        
+    ##
+    # @brief: Create the display for the calculator
+    #    
     def _createDisplay(self):
         self.display = QLineEdit()
         self.display.setFixedHeight(75)
@@ -662,7 +684,7 @@ class Calculator(QMainWindow):
             except ValueError as e:
                 self.display.setText(str(e))
             except Exception as e:
-                self.display.setText("Error: " + str(e))
+                self.display.setText(str(e))
 
                 
         elif button == "C":
