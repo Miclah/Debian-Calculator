@@ -4,7 +4,6 @@
 # @file: math_lib.py
 # @brief: Math Library for IVS project 2.
 # @author for the basic math operations: Norman Babiak <xbabia01@fit.vutbr.cz>
-# @author for the more complex math functions:  <>
 # @Created: 2023-03-14
 # @Last Modified: 2023-03-14
 ##
