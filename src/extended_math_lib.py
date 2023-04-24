@@ -20,7 +20,7 @@
 #
 def factorial(n):
     if n < 0:
-        raise ValueError("Factorial is not defined for negative numbers")
+        raise ValueError("Input must be > 0")
     result = 1
     for i in range(1, n + 1):
         result *= i
@@ -64,7 +64,7 @@ def sqrt(n):
     if n == 0:
         return 0
     elif n < 0:
-        raise ValueError("Cannot compute square root of negative number")
+        raise ValueError("Input must be > 0")
     else:
         guess = n
         while True:
@@ -85,7 +85,7 @@ def ln(x, num_terms=1000):
     Compute the natural logarithm (ln) of x.
     """
     if x <= 0:
-        raise ValueError("Input must be positive.")
+        raise ValueError("Input must be > 0")
     if x == 1:
         return 0.0
     if x < 1:
