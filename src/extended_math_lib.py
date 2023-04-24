@@ -1,7 +1,7 @@
 #!usr/bin/python
 
 ##
-# @file: math_lib.py
+# @file: extended_math_lib.py
 # @brief: Extended Math Library for IVS project 2.
 # @author Danyleyko Kirill (xdanyl00)
 # @Created: 2023-03-25

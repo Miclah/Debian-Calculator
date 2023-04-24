@@ -37,10 +37,9 @@ doc: Doxyfile $(MATH_LIB) $(EXT_MATH_LIB) $(MATH_TEST)
 	rm -rf ../doc
 	mkdir ../doc
 	doxygen
-	cd documentation && mv html/ ../../doc
-	rm -rf latex/ && cd ..
 
 # Clean generated files
 .PHONY: clean
 clean:
-	rm -rf __pycache__ ../doc documentation doxygen_error.log
+	rm -rf __pycache__ ../doc documentation
+	rm -f doxy_error.log
