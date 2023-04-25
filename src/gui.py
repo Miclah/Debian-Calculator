@@ -1,4 +1,4 @@
-#!usr/bin/python
+#!/usr/bin/python
 
 ##
 # @file: gui.py
@@ -145,6 +145,8 @@ def custom_eval(expression):
 
 
     return result
+
+
 
 ##
 # @brief: Provides the tutorial window for the Calculator application
