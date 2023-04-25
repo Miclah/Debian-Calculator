@@ -1,0 +1,8 @@
+[Desktop Entry]
+Categories=Utility;
+Exec=/usr/local/bin/ivs-calculator
+GenericName=Simple calculator
+Icon=/usr/share/icons/calculator.xpm
+Name=Calculator
+Type=Application
+X-KDE-StartupNotify=false
