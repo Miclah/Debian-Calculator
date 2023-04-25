@@ -1,4 +1,4 @@
-
+#!/usr/bin/python3
 
 ##
 # @file: gui.py
@@ -105,14 +105,19 @@ def custom_eval(expression):
     expression = re.sub(r'\s+', '', expression)
     print(f"Expression without spaces: {expression}")
 
-    tokens = re.findall(r'-?\d*\.\d+|-?\d+|[+\-×÷^()]', expression.replace(' ', ''))
+    tokens = re.findall(r'-?\d*\.\d+|-?\d+|[-+×÷^()]', expression.replace(' ', ''))
     print(f"Tokens: {tokens}")
     values = []
     operators = []
+    
+    previous_token = token
 
     for token in tokens:
-        if token == '-' and (not values or (operators and operators[-1] in '+-×÷^(')):
+        if token == '-' and (not values or (operators and operators[-1] in '+-×÷^(') or (previous_token and previous_token in '+-×÷^(')):
             token = 'u-'
+        elif token == '-' and (values and operators and operators[-1] not in '+-×÷^('):
+            operators.append(token)
+            continue
         elif token.replace('.', '', 1).replace('-', '', 1).isdigit():
             value = float(token)
             if operators and operators[-1] == 'u-':
@@ -130,6 +135,7 @@ def custom_eval(expression):
                     greater_precedence(operators[-1], token) and token != 'u-'):
                 apply_operator(operators, values)
             operators.append(token)
+        previous_token = token
         print(f"Values: {values}")
         print(f"Operators: {operators}")
 
@@ -150,11 +156,14 @@ def custom_eval(expression):
 result = custom_eval("(10+5*3+10/1)*2")
 print(f"Final result: {result}")
 
-
-# Define the TutorialWindow class, which inherits from QDialog
+##
+# @brief: Provides the tutorial window for the Calculator application
+# @param QDialog: Parent class
+#
 class TutorialWindow(QDialog):
     ##
     # @brief: Constructor of the TutorialWindow class, initializes the tutorial window
+    # @param self: Instance of the TutorialWindow class
     # @param parent: Parent widget, default is None
     #
     def __init__(self, parent=None):
@@ -286,10 +295,12 @@ class TutorialWindow(QDialog):
 
     ##
     # @brief: Creates the custom title bar for the tutorial window
+    # @param self: Instance of the TutorialWindow class
     #
     def _createTitleBar(self):
         self.title_bar = QWidget(self) # Create a new QWidget instance for the title bar
         
+        # Set stylesheet for the title bar
         self.title_bar.setStyleSheet("""
             background-color: none;
             border: none;
@@ -332,34 +343,46 @@ class TutorialWindow(QDialog):
 
     ##
     # @brief: Handles mouse press event for dragging the window
+    # @param self: Instance of the TutorialWindow class
     # @param event: The QMouseEvent object
     #
     def mousePressEvent(self, event):
         if event.button() == Qt.LeftButton:
-            self.oldPos = event.globalPos()
+            self.oldPos = event.globalPos() # Store the initial mouse press position
 
     ##
     # @brief: Handles mouse move event for dragging the window
+    # @param self: Instance of the TutorialWindow class
     # @param event: The QMouseEvent object
     #
     def mouseMoveEvent(self, event):
+        # If the left mouse button is pressed and the initial position is set
         if event.buttons() == Qt.LeftButton and self.oldPos is not None:
-            delta = event.globalPos() - self.oldPos
-            self.move(self.x() + delta.x(), self.y() + delta.y())
-            self.oldPos = event.globalPos()
+            
+            delta = event.globalPos() - self.oldPos # Calculate the position difference
+            self.move(self.x() + delta.x(), self.y() + delta.y()) # Move the tutorial window based on the position difference
+            self.oldPos = event.globalPos() # Update the initial position
 
     ##
     # @brief: Handles mouse release event for dragging the window
+    # @param self: Instance of the TutorialWindow class
     # @param event: The QMouseEvent object
     #
     def mouseReleaseEvent(self, event):
         if event.button() == Qt.LeftButton:
-            self.oldPos = None
+            self.oldPos = None # Clear the initial position when the left mouse button is released
 
-# Define the Calculator class, which inherits from QMainWindow
+
+
+
+
+##
+# @brief: Main calculator window
+# @param QMainWindow: Parent class
 class Calculator(QMainWindow):
     ##
     # @brief: Initialize the Calculator instance
+    # @param self: Instance of the Calculator class
     #
     def __init__(self):
         super().__init__() # Call the QMainWindow constructor
@@ -385,42 +408,47 @@ class Calculator(QMainWindow):
     
     ##
     # @brief: Create the custom title bar for the calculator window
+    # @param self: Instance of the Calculator class
     #
     def _createTitleBar(self):
+        # Create the title bar widget and set its fixed height
         self.titleBar = QWidget()
         self.titleBar.setFixedHeight(30)
 
+        # Create a horizontal layout for the title bar and set its margins and spacing
         titleBarLayout = QHBoxLayout()
         titleBarLayout.setContentsMargins(0, 0, 0, 0)  
         titleBarLayout.setSpacing(1)
 
+        # Create a title label and set its style
         self.titleLabel = QLabel("Calculator")
-        self.titleLabel.setStyleSheet("color: white; font-size: 14px;")
+        self.titleLabel.setStyleSheet("color: white; font-size: 14px;") 
         titleBarLayout.addWidget(self.titleLabel)
 
+        # Add stretch to push the other buttons to the right side of the title bar
         titleBarLayout.addStretch()
         
 
-        
+        # Create and style the help button, and connect it to the showTutorial function
         self.helpButton = QPushButton("?")
-        self.helpButton.setFixedSize(40, 30)
+        self.helpButton.setFixedSize(40, 30) # Set a fixed size for the help button
         self.helpButton.clicked.connect(self.showTutorial) 
-        self.helpButton.setStyleSheet("background-color: transparent; border: none;")  
-        titleBarLayout.addWidget(self.helpButton)
+        self.helpButton.setStyleSheet("background-color: transparent; border: none;") # Set the style for the help button
+        titleBarLayout.addWidget(self.helpButton) # Add the help button to the title bar layout
 
+        # Create and style the minimize button, and connect it to the showMinimized function
         self.minimizeButton = QPushButton("-")
-        self.minimizeButton.setFixedSize(40, 30)
-        self.minimizeButton.clicked.connect(self.showMinimized)
-        titleBarLayout.addWidget(self.minimizeButton)
+        self.minimizeButton.setFixedSize(40, 30) # Set a fixed size for the minimize button
+        self.minimizeButton.clicked.connect(self.showMinimized) 
+        titleBarLayout.addWidget(self.minimizeButton) # Add the minimize button to the title bar layout
         
-
+        # Create and style the close button, and connect it to the close function
         self.closeButton = QPushButton("X")
-        self.closeButton.setFixedSize(40, 30)
-        self.closeButton.clicked.connect(self.close)
-        titleBarLayout.addWidget(self.closeButton)
+        self.closeButton.setFixedSize(40, 30) # Set a fixed size for the close button
+        self.closeButton.clicked.connect(self.close) # Connect the button's click event to the close method
+        titleBarLayout.addWidget(self.closeButton) # Add the close button to the title bar layout
 
-        titleBarLayout.addSpacing(10)
-
+        # Set the style for the help button when hovered over
         self.helpButton.setStyleSheet("""
             QPushButton {
                 background-color: transparent;
@@ -433,6 +461,7 @@ class Calculator(QMainWindow):
             }
         """)
 
+        # Set the style for the minimize button when hovered over
         self.minimizeButton.setStyleSheet("""
             QPushButton {
                 background-color: transparent;
@@ -445,8 +474,10 @@ class Calculator(QMainWindow):
             }
         """)
 
+        # Set the cursor style for the minimize button
         self.minimizeButton.setCursor(Qt.PointingHandCursor)
 
+        # Set the style for the close button when hovered over
         self.closeButton.setStyleSheet("""
             QPushButton {
                 background-color: transparent;
@@ -459,20 +490,27 @@ class Calculator(QMainWindow):
             }
         """)
 
-        self.closeButton.setCursor(Qt.PointingHandCursor)
+        self.closeButton.setCursor(Qt.PointingHandCursor) # Set the cursor style for the close button
 
-        self.titleBar.setLayout(titleBarLayout)
-        self.generalLayout.addWidget(self.titleBar)
+        self.titleBar.setLayout(titleBarLayout) # Set the layout for the title bar widget
+        
+        self.generalLayout.addWidget(self.titleBar) # Add the title bar widget to the main window layout
         
     ##
     # @brief: Create the display for the calculator
+    # @param self: Instance of the Calculator class
     #    
     def _createDisplay(self):
+        # Create the display QLineEdit and set its fixed height
         self.display = QLineEdit()
         self.display.setFixedHeight(75)
+        
+        # Configure the display properties
         self.display.setReadOnly(True)
         self.display.setAlignment(Qt.AlignRight)
         self.generalLayout.addWidget(self.display)
+        
+        # Set the style for the calculator
         self.setStyleSheet("""
            QWidget {
                 background-color: #202020;
@@ -535,21 +573,24 @@ class Calculator(QMainWindow):
             QPushButton[other_button="true"]:hover {
                 background-color: #3B3B3B;
             }
-
-
-            
         """)
-        self.display.setMaxLength(21)  
+        
+        
+        self.display.setMaxLength(21) # Set the maximum length of the display
         self.display.setContentsMargins(0, 0, 0, 0)
 
+    ##
+    # @brief: Create the buttons for the calculator and add them to the layout
+    # @param self: Instance of the Calculator class
+    #
     def _createButtons(self):
+        
         self.buttons = {}
-        buttonsLayout = QGridLayout()
-        buttonsLayout.setHorizontalSpacing(1)  
-        buttonsLayout.setVerticalSpacing(3)  
+        buttonsLayout = QGridLayout() # Set up a grid layout for the buttons
+        buttonsLayout.setHorizontalSpacing(1) # Set horizontal spacing between buttons
+        buttonsLayout.setVerticalSpacing(3) # Set vertical spacing between buttons
         
-        
-        
+        # Dictionary containing button text and grid positions
         buttons = {
             "(": (0, 0),
             ")": (0, 1),
@@ -577,19 +618,24 @@ class Calculator(QMainWindow):
             "+": (5, 3),  
         }
         
+        # Set up the tutorial button and connect it to the _buttonClicked method
         self.tutorialButton = QPushButton("?")
         self.tutorialButton.clicked.connect(self._buttonClicked)
 
 
-
+        # Loop through the buttons dictionary and create each button with its properties
         for btnText, pos in buttons.items():
-            button = QPushButton(btnText)
-            button.setFont(QFont("Arial", 14, QFont.Bold))
-            button.setFixedSize(72, 54) 
-            button.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+            
+            button = QPushButton(btnText) # Create the button
+            button.setFont(QFont("Arial", 14, QFont.Bold)) # Set the font for the button
+            button.setFixedSize(72, 54) # Set the button size
+            button.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding) # Set the button size policy
+            
+            # Set the 'operator' property for the main arithmetic operator buttons
             if btnText in {'-', '+', '÷', '×'}:
                 button.setProperty('operator', True)
 
+            # Set the 'equal_button' property and style for the equal button
             if btnText == '=':
                 button.setProperty('equal_button', True)
                 button.setStyleSheet("""
@@ -608,13 +654,18 @@ class Calculator(QMainWindow):
                     }
                 """)  
 
+            # Set the 'number' property for the number buttons and the tutorial button
             if btnText in {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '?'}:
                 button.setProperty('number', True)
 
+            # Set the 'other_button' property for the remaining buttons
             elif btnText in {'(', ')', 'x!', 'x^y', '√x', 'C', 'DEL', '-', '+', '÷', '×', 'ln'}:
                 button.setProperty('other_button', True)
 
+            # Connect the button click to the _buttonClicked method
             button.clicked.connect(lambda ch, btn=btnText: self._buttonClicked(btn))
+            
+            # Add the button to the grid layout
             if len(pos) == 4:
                 row, col, rowspan, colspan = pos
                 buttonsLayout.addWidget(button, row, col, rowspan, colspan)
@@ -622,31 +673,56 @@ class Calculator(QMainWindow):
                 row, col = pos
                 buttonsLayout.addWidget(button, row, col)
 
+        # Add the buttons grid layout to the general layout
         self.generalLayout.addLayout(buttonsLayout)
 
-        
+
+    ##
+    # @brief: Handle the mouse press event for dragging the calculator window
+    # @param self: Instance of the Calculator class
+    # @param event: QMouseEvent containing information about the mouse press event
+    #    
     def mousePressEvent(self, event):
         if event.button() == Qt.LeftButton:
-            self.oldPos = event.globalPos()
+            self.oldPos = event.globalPos() # Store the initial mouse press position
 
+    ##
+    # @brief: Handle the mouse move event for dragging the calculator window
+    # @param self: Instance of the Calculator class
+    # @param event: QMouseEvent containing information about the mouse move event
+    #
     def mouseMoveEvent(self, event):
+        # If the left mouse button is pressed and the initial position is set
         if event.buttons() == Qt.LeftButton and self.oldPos is not None:
-            delta = event.globalPos() - self.oldPos
-            self.move(self.x() + delta.x(), self.y() + delta.y())
-            self.oldPos = event.globalPos()
-
+            delta = event.globalPos() - self.oldPos# Calculate the position difference
+            self.move(self.x() + delta.x(), self.y() + delta.y()) # Move the calculator window based on the position difference
+            self.oldPos = event.globalPos() # Update the initial position
+    
+    ##
+    # @brief: Handle the mouse release event for dragging the calculator window
+    # @param event: QMouseEvent containing information about the mouse release event
+    #
     def mouseReleaseEvent(self, event):
         if event.button() == Qt.LeftButton:
-            self.oldPos = None
+            self.oldPos = None # Clear the initial position when the left mouse button is released
 
+    ##
+    # @brief: Handles button clicks and performs the corresponding operations
+    # @param self: The instance of the class
+    # @param button: The button text representing the action to be performed
+    # @exception ValueError: Raised when an invalid input is encountered
+    # @exception Exception: Raised for other unexpected exceptions
+    #
     def _buttonClicked(self, button):
         
-        print(f"Button clicked: {button}") 
-        
+        # If the clicked button is a number, decimal point, parentheses or an operator
         if button in {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", ".", "(", ")", "÷", "×", "-", "+"}:
-            self.display.insert(button)
-            self._adjust_font_size()
-            current_length = len(self.display.text())
+            
+            self.display.insert(button) # Add the button text to the display
+            self._adjust_font_size() # Adjust the font size based on the display content
+            current_length = len(self.display.text()) # Get the current length of the display text
+            
+            # If the display text length exceeds 15 characters, reduce the font size accordingly
             if current_length > 15:
                 new_font_size = 30 - (current_length - 15) * 2
                 new_font_size = max(new_font_size, 10)  
@@ -660,14 +736,16 @@ class Calculator(QMainWindow):
                     }}
                 """)
 
+        # If the clicked button is the equal sign
         elif button == "=":
             try:
-                text = self.display.text()
-                result = custom_eval(text)
-                formatted_result = self._format_number(str(result))
-                self.display.setText(formatted_result)
-                self._adjust_font_size()
+                text = self.display.text() # Get the current display text
+                result = custom_eval(text) # Evaluate the expression in the display
+                formatted_result = self._format_number(str(result)) # Format the result
+                self.display.setText(formatted_result) # Set the formatted result to the display
+                self._adjust_font_size() # Adjust the font size based on the new display content
 
+                # If the display text length exceeds 15 characters, reduce the font size accordingly
                 current_length = len(self.display.text())
                 if current_length > 15:
                     new_font_size = 30 - (current_length - 15) * 2
@@ -681,36 +759,40 @@ class Calculator(QMainWindow):
                             padding: 0 10px 
                         }}
                     """)
+            # Handle value errors and display an error message
             except ValueError as e:
                 self.display.setText(str(e))
+            # Handle other exceptions and display an error message
             except Exception as e:
                 self.display.setText(str(e))
 
-                
+        # If the clicked button is the clear button
         elif button == "C":
-            self.display.clear()
+            self.display.clear() # Clear the display
             
-        
-            
+        # If the clicked button is the delete button    
         elif button == "DEL":
-            self.display.backspace()
+            self.display.backspace() # Delete the last character in the display
             
+        # If the clicked button is the factorial button
         elif button == "x!":
             try:
-                text = self.display.text().replace("x!", "")
+                text = self.display.text().replace("x!", "") # Remove the factorial symbol from the display text
                 if not text:
                     return
-                number = int(text)
+                number = int(text) # Convert the text to an integer
+                
+                # If the input is too large for calculating factorial, display an error message
                 if number > 170:
                     self.display.setText("Exceeds limit for x!")
                     return
-                result = factorial(number)
-                formatted_result = self._format_number(str(result))
-                self.display.setText(formatted_result)
-                self._adjust_font_size()    
                 
+                result = factorial(number) # Calculate the factorial of the input number
+                formatted_result = self._format_number(str(result)) # Format the result
+                self.display.setText(formatted_result) # Set the formatted result to the display
+                self._adjust_font_size() # Adjust the font size based on the new display content
                 
-
+                # If the display text length exceeds 15 characters, reduce the font size accordingly
                 current_length = len(self.display.text())
                 if current_length > 15:
                     new_font_size = 30 - (current_length - 15) * 2
@@ -724,38 +806,38 @@ class Calculator(QMainWindow):
                             padding: 0 10px;
                         }}
                     """)
+            # Handle value errors and display an error message
             except ValueError:
                 self.display.setText("Invalid input for x!")
+            # Handle other exceptions and display an error message
             except Exception as e:
                 self.display.setText(str(e))    
 
-
-
-                
+        # If the clicked button is the power button button
         elif button == "x^y":
-            self.display.insert("^")
-            
-
-            
+            self.display.insert("^") # Insert the caret (^) symbol for exponentiation
+        
+        # If the clicked button is the "?" button
         elif button == "?":
-            print("Tutorial button clicked")
-            self.showTutorial()
+            self.showTutorial() # Show the tutorial
 
-
+        # If the clicked button is the "√x" button
         elif button == "√x":
             try:
-                text = self.display.text().replace("√x", "")
+                text = self.display.text().replace("√x", "") # Remove the square root symbol from the display text
                 if not text:
                     return
-                number = float(text)
+                number = float(text) # Convert the text to a float and calculate the square root
                 result = sqrt(number)
+                # Check if the result is a valid number
                 if not isinstance(result, (int, float)):
                     self.display.setText("Invalid input for √x")
                     return
-                formatted_result = self._format_number(str(result))
+                formatted_result = self._format_number(str(result)) # Format the result and update the display
                 self.display.setText(formatted_result)
                 self._adjust_font_size()
 
+                # If the display text length exceeds 15 characters, reduce the font size accordingly
                 current_length = len(self.display.text())
                 if current_length > 15:
                     new_font_size = 30 - (current_length - 15) * 2
@@ -769,22 +851,29 @@ class Calculator(QMainWindow):
                             padding: 0 10px;
                         }}
                     """)
+            # Handle value errors and display an error message
             except ValueError as e:
                 self.display.setText(str(e))
+            # Handle other exceptions and display an error message
             except Exception as e:
                 self.display.setText("Invalid input for √x")
 
-                
+        # If the clicked button is the "ln" button  
         elif button == "ln":
             text = self.display.text()
+            # Check if the ln function is not already in the display text
             if 'ln(' not in text:
                 self.display.insert("ln()")
-                cursor_position = self.display.cursorPosition()
+                cursor_position = self.display.cursorPosition() # Set the cursor position within the parentheses
                 self.display.setCursorPosition(cursor_position - 1)
+                
+            # If the closing parenthesis is missing, add it
             elif ')' not in text:
                 self.display.insert(")")
                 cursor_position = self.display.cursorPosition()
                 self.display.setCursorPosition(cursor_position)
+            
+            # If the expression is complete, evaluate it
             else:
                 try:
                     result = custom_eval(text)
@@ -792,6 +881,7 @@ class Calculator(QMainWindow):
                     self.display.setText(formatted_result)
                     self._adjust_font_size()
 
+                    # If the display text length exceeds 15 characters, reduce the font size accordingly
                     current_length = len(self.display.text())
                     if current_length > 15:
                         new_font_size = 30 - (current_length - 15) * 2
@@ -805,59 +895,98 @@ class Calculator(QMainWindow):
                                 padding: 0 10px;
                             }}
                         """)
+                # Handle value errors and display an error message
                 except Exception as e:
                     self.display.setText(str(e))
 
-
-
-
+    ##
+    # @brief: Handles key press events for the calculator
+    # @param self: The instance of the class
+    # @param event: The event object containing information about the key press
+    #
     def keyPressEvent(self, event):
-        key = event.text()
+        key = event.text() # Get the text of the pressed key
 
+        # If the key is a digit, decimal, or arithmetic symbol, insert it into the display
         if key in '0123456789.+-()':
             self.display.insert(key)
             self._adjust_font_size()  
+        
+        # If the key is an asterisk, insert the multiplication symbol
         elif event.key() == Qt.Key_Asterisk:
             self.display.insert('×')
+            
+        # If the key is a forward slash, insert the division symbol
         elif event.key() == Qt.Key_Slash:
             self.display.insert('÷')
+        
+        # If the key is enter or return, trigger the equals button
         elif event.key() in {Qt.Key_Enter, Qt.Key_Return, Qt.Key_Enter - 1}:
             self._buttonClicked("=")
+            
+        # If the key is 'C' or 'c', trigger the clear button
         elif key.lower() == "c":
             self._buttonClicked("C")
+            
+        # If the key is backspace, trigger the delete button
         elif event.key() == Qt.Key_Backspace:
             self._buttonClicked("DEL")
+            
+        # If the key is 'S' or 's', trigger the square root button
         elif key.lower() == "s":
             self._buttonClicked("√x")
+        
+        # If the key is 'F' or 'f', trigger the factorial button
         elif key.lower() == "f":
             self._buttonClicked("x!")
+            
+        # If the key is 'L' or 'l', trigger the natural logarithm button
         elif key.lower() == "l":
             self._buttonClicked("ln")
+            
+        # If the key is 'P' or 'p', trigger the power button
         elif key.lower() == "p":
             self._buttonClicked("x^y")
 
-  
+
+    ##
+    # @brief Show the tutorial window
+    # @param self The instance of the class
+    #
     def showTutorial(self):
-        print("Showing tutorial window")
+        # Create a new instance of the tutorial window and center it on the screen
         tutorialWindow = TutorialWindow(self)
         tutorialWindow.move(self.geometry().center() - tutorialWindow.rect().center())
-        tutorialWindow.exec_()
+        tutorialWindow.exec_() # Execute the tutorial window event loop
 
 
 
-        
+    ##
+    # @brief: Format a number string with thousands separators
+    # @param self: The instance of the class
+    # @param number: The number string to format
+    # @return: The formatted number string
+    #
     def _format_number(self, number):
+        # If the number has a decimal point, format the integer and decimal parts separately
         if '.' in number:
             parts = number.split('.')
             formatted_integer = '{:,}'.format(int(parts[0]))
             return f"{formatted_integer}.{parts[1]}"
+        
+        # If the number is an integer, format it with thousands separators
         else:
             return '{:,}'.format(int(number))
         
-        
+    
+    ##
+    # @brief: Adjusts the font size of the display based on the length of the text
+    # @param self: The instance of the class
+    #
     def _adjust_font_size(self):
-        current_length = len(self.display.text())
+        current_length = len(self.display.text()) # Get the current length of the display text
         
+        # Determine the appropriate font size based on the length of the display text
         if current_length <= 17:
             new_font_size = 30
         elif 17 < current_length < 20:
@@ -867,6 +996,7 @@ class Calculator(QMainWindow):
         else:
             new_font_size = 20
 
+        # Apply the new font size and style to the display
         self.display.setStyleSheet(f"""
             QLineEdit {{
                 background-color: #202020;
@@ -879,10 +1009,11 @@ class Calculator(QMainWindow):
         """)
 
 
-
-
+##
+# @brief: The main entry point for the calculator application
+#
 if __name__ == "__main__":
-    app = QApplication(sys.argv)
-    app.setStyle("Fusion")
-    calc = Calculator()
-    sys.exit(app.exec_())
+    app = QApplication(sys.argv) # Create a QApplication instance with command-line arguments
+    app.setStyle("Fusion") # Set the application style to "Fusion"
+    calc = Calculator() # Create a Calculator instance
+    sys.exit(app.exec_()) # Start the application event loop and exit with the returned exit code
