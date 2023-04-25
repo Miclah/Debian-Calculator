@@ -3,7 +3,7 @@ MATH_TEST=UT_math_lib.py
 MATH_LIB=math_lib.py
 EXT_MATH_LIB=extended_math_lib.py
 PROFILER=stddev.py
-ZIP=xpetra32_xdanyl00_xmilis00_xbabia01
+TEAM=xpetra32_xdanyl00_xmilis00_xbabia01
 
 # Default target to install dependencies
 .PHONY: all
@@ -44,12 +44,24 @@ clean:
 	rm -rf __pycache__ ../doc documentation
 	rm -f doxy_error.log
 
-#installer for calculator
-installer: gui.py math_lib.py extended_math_lib.py dependencies.txt
-        chmod +x py_script.sh
-        bash py_script.sh
-#installer for deviation
-installer2: math_lib.py extended_math_lib.py stddev.py dependencies.txt
-        chmod +x py_script2.sh
-        bash py_script2.sh
+# Installer for calculator
+installer: setup $(GUI) $(MATH_LIB) $(EXT_MATH_LIB) dependencies.txt
+	chmod +x py_script.sh
+	bash py_script.sh
 
+# Installer for deviation
+installer2: setup $(PROFILER) $(MATH_LIB) $(EXT_MATH_LIB) dependencies.txt
+	chmod +x py_script2.sh
+	bash py_script2.sh
+
+pack: doc installer installer2 clean
+	mkdir -p ../../$(TEAM)/repo && mkdir -p ../../$(TEAM)/installer
+
+	cp -r ../ ../../$(TEAM)/repo
+	cp -r ../installer/calculator_installer.deb ../../$(TEAM)/installer
+	cp -r ../installer/deviation_installer.deb ../../$(TEAM)/installer
+	cp -r ../doc ../../$(TEAM)
+
+	rm -rf ../../$(TEAM)/repo/doc
+
+	cd ../../ && zip -r $(TEAM).zip $(TEAM)/
