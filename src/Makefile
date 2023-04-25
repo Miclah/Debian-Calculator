@@ -43,3 +43,13 @@ doc: Doxyfile $(MATH_LIB) $(EXT_MATH_LIB) $(MATH_TEST)
 clean:
 	rm -rf __pycache__ ../doc documentation
 	rm -f doxy_error.log
+
+#installer for calculator
+installer: gui.py math_lib.py extended_math_lib.py dependencies.txt
+        chmod +x py_script.sh
+        bash py_script.sh
+#installer for deviation
+installer2: math_lib.py extended_math_lib.py stddev.py dependencies.txt
+        chmod +x py_script2.sh
+        bash py_script2.sh
+
