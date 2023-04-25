@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!usr/bin/python
 
 ##
 # @file: gui.py
@@ -103,21 +103,19 @@ def custom_eval(expression):
     expression = expression.lstrip('+')
 
     expression = re.sub(r'\s+', '', expression)
-    print(f"Expression without spaces: {expression}")
 
-    tokens = re.findall(r'-?\d*\.\d+|-?\d+|[-+×÷^()]', expression.replace(' ', ''))
-    print(f"Tokens: {tokens}")
+    tokens = re.findall(r'\d*\.\d+|\d+|[-+×÷^()]', expression.replace(' ', ''))
     values = []
     operators = []
     
-    previous_token = token
+    previous_token = None
 
     for token in tokens:
         if token == '-' and (not values or (operators and operators[-1] in '+-×÷^(') or (previous_token and previous_token in '+-×÷^(')):
             token = 'u-'
+            operators.append(token)
         elif token == '-' and (values and operators and operators[-1] not in '+-×÷^('):
             operators.append(token)
-            continue
         elif token.replace('.', '', 1).replace('-', '', 1).isdigit():
             value = float(token)
             if operators and operators[-1] == 'u-':
@@ -136,11 +134,6 @@ def custom_eval(expression):
                 apply_operator(operators, values)
             operators.append(token)
         previous_token = token
-        print(f"Values: {values}")
-        print(f"Operators: {operators}")
-
-
-
 
 
     while operators:
@@ -152,9 +145,6 @@ def custom_eval(expression):
 
 
     return result
-
-result = custom_eval("(10+5*3+10/1)*2")
-print(f"Final result: {result}")
 
 ##
 # @brief: Provides the tutorial window for the Calculator application
@@ -514,7 +504,7 @@ class Calculator(QMainWindow):
         self.setStyleSheet("""
            QWidget {
                 background-color: #202020;
-                border-radius: 5px;
+                border-radius: 5px;   
             }
 
             QPushButton {
