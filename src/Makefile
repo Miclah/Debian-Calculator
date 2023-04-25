@@ -13,6 +13,7 @@ all: setup
 .PHONY: setup
 setup:
 	sudo apt-get -y update
+	sudo apt install python3
 	sudo apt-get install python3-pyqt5
 	pip install pyinstaller
 
@@ -34,14 +35,12 @@ profile: $(PROFILER)
 # Generate documentation with Doxygen
 .PHONY: doc
 doc: Doxyfile $(MATH_LIB) $(EXT_MATH_LIB) $(MATH_TEST)
-	rm -rf ../doc
-	mkdir ../doc
 	doxygen
 
 # Clean generated files
 .PHONY: clean
 clean:
-	rm -rf __pycache__ ../doc documentation
+	rm -rf __pycache__ documentation
 	rm -f doxy_error.log
 
 # Installer for calculator
@@ -63,5 +62,6 @@ pack: doc installer installer2 clean
 	cp -r ../doc ../../$(TEAM)
 
 	rm -rf ../../$(TEAM)/repo/doc
+	rm -rf ../doc
 
 	cd ../../ && zip -r $(TEAM).zip $(TEAM)/
