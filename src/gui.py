@@ -5,12 +5,8 @@
 # @brief: GUI for IVS project 2.
 # @author Michal Petrán (xpetra32)
 # @Created: 22-03-2023
-# @Last Modified: 23-04-2023
+# @Last Modified: 25-04-2023
 ##
-
-#TODO: 
-# () sometimes cause a problem with calculations
-# fix -
 
 
 # Import necessary libraries
@@ -23,30 +19,48 @@ from math_lib import add, sub, mul, div  # Import basic math functions from cust
 from extended_math_lib import factorial, power, sqrt, ln  # Import extended math functions from custom extended_math_lib module
 
 
+##
+# @brief: Checks if the parentheses in the given string are valid
+# @param s: String containing the expression
+# @return Boolean: value indicating whether the parentheses are valid or not
+#
 def is_valid_parentheses(s):
-    stack = []
+    stack = [] # Initialize an empty stack
     for c in s:
-        if c == '(':
+        if c == '(': # If an opening parenthesis is found, add it to the stack
             stack.append(c)
-        elif c == ')':
-            if not stack:
+        elif c == ')': # If a closing parenthesis is found
+            if not stack: # If the stack is empty, parentheses are not balanced
                 return False
-            stack.pop()
-    return not stack
+            stack.pop() # Remove the last opening parenthesis from the stack
+    return not stack # Return True if the stack is empty, otherwise False
+ 
 
+##
+# @brief: Custom evaluation function for mathematical expressions
+# @param expression: String containing the mathematical expression
+# @return: The result of the evaluated expression
+# @exception ValueError: If the input format is invalid or unsupported
+#
 def custom_eval(expression):
     
-    
+    ##
+    # @brief: Applies an operator to the given operands
+    # @param operators: List of operators
+    # @param values: List of values (operands)
+    # @exception ValueError: If the operation is unsupported
+    #
     def apply_operator(operators, values):
-        operator = operators.pop()
+        operator = operators.pop() # Remove the last operator from the list
         if operator == 'u-':
-            right = values.pop()
-            result = -right
-            values.append(result)
+            right = values.pop() # Remove the last value from the list
+            result = -right # Negate the value
+            values.append(result) # Add the negated value back to the list
         else:
-            right = values.pop()
-            left = values.pop()
+            right = values.pop() # Remove the last value as the right operand   
+            left = values.pop() # Remove the second-last value as the left operand
             if operator == '^':
+                # Handle cases with negative exponents
                 if right < 0 and left > 0:
                     raise ValueError("Neg. exp. not allowed")
                 if right < 0:
@@ -55,37 +69,47 @@ def custom_eval(expression):
                     result = -power(-left, right)
                 else:
                     result = power(left, right)
+            # Apply the operator to the operands and store the result
             else:
                 result = operations[operator](left, right)
+                
+            # If the result is an integer, store it as an int instead of float
             if isinstance(result, float) and result.is_integer():
                 result = int(result)
-            values.append(result)
+            values.append(result) # Add the result back to the list
 
-
+    ##
+    # @brief: Compares the precedence of two operators
+    # @param op1: First operator
+    # @param op2: Second operator
+    # @return: Boolean value indicating if op1 has greater or equal precedence than op2
+    #
     def greater_precedence(op1, op2):
         precedences = {'+': 1, '-': 1, '×': 2, '÷': 2, '^': 3, 'u-': 4}
         return precedences[op1] >= precedences[op2]
 
 
-
+    # Define the supported binary operations
     operations = {
         '+': add,
         '-': sub,
         '×': mul,
         '÷': div,
-        '^': lambda x, y: power(x, y) if x > 0 or (x < 0 and y >= 0 and int(y) % 2 == 0) else -power(-x, y) if x < 0 and y >= 0 and int(y) % 2 != 0 else ValueError("Negative exponents are not supported."),
+        '^': power,
     }
 
+    # Define the supported single-operand operations
     single_operand_operations = {
         'x!': factorial,
         '√x': sqrt,
         'ln': ln
     }
     
-    
+    # Check if there are any invalid single-operand operations
     if re.search(r'\d+\s*(ln|√x|x!)', expression):
         raise ValueError("Invalid input format.")
 
+    # Check if the input expression is valid
     if not re.match(r'^\s*[\-+\(\)]?(\d+(\.\d+)?|\.\d+|\()+\s*([\+\-\*/\^\(\)×÷]+\s*[\-+\(\)]?\s*(\d+(\.\d+)?|\.\d+|\()+\s*)*\)?$', expression) or not is_valid_parentheses(expression):
         for operator, func in single_operand_operations.items():
             if operator + '(' in expression:
@@ -100,50 +124,68 @@ def custom_eval(expression):
                     raise ValueError("Invalid input format.")
         raise ValueError("Incorrect input")
     
-    expression = expression.lstrip('+')
-
-    expression = re.sub(r'\s+', '', expression)
-
-    tokens = re.findall(r'\d*\.\d+|\d+|[-+×÷^()]', expression.replace(' ', ''))
-    values = []
-    operators = []
+   
+    expression = expression.lstrip('+')  # Remove leading '+' sign if present
     
-    previous_token = None
+    expression = re.sub(r'\s+', '', expression) # Remove whitespaces from the expression
 
+    # Tokenize the expression into operands, operators, and parentheses
+    tokens = re.findall(r'\d*\.\d+|\d+|[-+×÷^()]', expression.replace(' ', ''))
+    values = [] # Initialize a list to store the values (operands)
+    operators = [] # Initialize a list to store the operators
+    
+    previous_token = None # Keep track of the previous token
+
+    # Iterate through the tokens
     for token in tokens:
+        # Handle unary minus (negative sign) and binary minus (subtraction)
         if token == '-' and (not values or (operators and operators[-1] in '+-×÷^(') or (previous_token and previous_token in '+-×÷^(')):
-            token = 'u-'
-            operators.append(token)
+            token = 'u-' # Replace '-' with 'u-' for unary minus
+            operators.append(token) # Add the unary minus to the operators list
+            
         elif token == '-' and (values and operators and operators[-1] not in '+-×÷^('):
-            operators.append(token)
+            operators.append(token) # Add the binary minus to the operators list
+            
+        # Handle numbers (operands)
         elif token.replace('.', '', 1).replace('-', '', 1).isdigit():
             value = float(token)
             if operators and operators[-1] == 'u-':
                 value = -value
                 operators.pop()
             values.append(value)
+        
+        # Handle opening parentheses
         elif token == '(':
-            operators.append(token)
+            operators.append(token) # Add the opening parenthesis to the operators list
+        
+        # Handle closing parentheses
         elif token == ')':
+            # Apply operators within parentheses until the opening parenthesis is reached
             while operators and operators[-1] != '(':
-                apply_operator(operators, values)
-            operators.pop()
+                apply_operator(operators, values) # Apply the operator to the operands
+            operators.pop() # Remove the opening parenthesis from the operators list
+            
+        # Handle binary operators (+, -, ×, ÷, ^)
         else:
+            # Apply operators in the operators list with greater or equal precedence than the current operator
             while (operators and operators[-1] != '(' and
                     greater_precedence(operators[-1], token) and token != 'u-'):
                 apply_operator(operators, values)
-            operators.append(token)
-        previous_token = token
+            operators.append(token) # Add the current operator to the operators list
+            
+        previous_token = token # Update the previous token
 
-
+    # Continue applying operators until the operators list is empty
     while operators:
         apply_operator(operators, values)
 
-    result = values[0]
+    result = values[0] # Get the final result
+    
+    # Check if the result is too large
     if abs(result) > 1e300:
         raise ValueError("Result is too large.")
 
-
+    # Return the final result
     return result
 
 
@@ -242,40 +284,59 @@ class TutorialWindow(QDialog):
 
         # Create the scroll area and its contents
         self.tutorial_text = [
-            QLabel("<p>Welcome to the Calculator Tutorial! This calculator is designed to be user-friendly and easy to use.</p>"),
-            QLabel("<p>You can perform calculations using either your mouse or your keyboard. Let's go through each option.</p>"),
-            QLabel("<p><b>Using the Mouse:</b></p>"),
-            QLabel("<ul>"
-                "<li>To input numbers, click on the number buttons (0-9) on the calculator.</li>"
-                "<li>To perform basic operations, click on the respective operation buttons:</li>"
-                "<ul>"
-                "<li>Addition (+): Click the '+' button.</li>"
-                "<li>Subtraction (-): Click the '-' button.</li>"
-                "<li>Multiplication (×): Click the '×' button.</li>"
-                "<li>Division (÷): Click the '÷' button.</li>"
-                "<li>Power (^): Click the '^' button.</li>"
-                "<li>Logarithm (log): Click the 'log' button.</li>"
-                "</ul>"
-                "<li>To clear the input field, click the 'C' button.</li>"
-                "<li>To evaluate the expression, click the '=' button.</li>"
-                "</ul>"),
-            QLabel("<p><b>Using the Keyboard:</b></p>"),
-            QLabel("<ul>"
-                "<li>To input numbers, press the number keys (0-9) on your keyboard.</li>"
-                "<li>To perform basic operations, press the respective operation keys:</li>"
-                "<ul>"
-                "<li>Addition (+): Press the '+' key.</li>"
-                "<li>Subtraction (-): Press the '-' key.</li>"
-                "<li>Multiplication (×): Press the '*' key.</li>"
-                "<li>Division (÷): Press the '/' key.</li>"
-                "<li>Power (^): Press the '^' key.</li>"
-                "<li>Logarithm (log): Type 'log' followed by the base, a comma, and the number, e.g., 'log10,100'.</li>"
-                "</ul>"
-                "<li>To clear the input field, press the 'C' key.</li>"
-                "<li>To evaluate the expression, press the 'Enter' key.</li>"
-                "</ul>"),
-            QLabel("<p>You can move the calculator window by clicking and dragging the title bar. To close the tutorial window, click the 'X' button in the upper right corner or press the 'Esc' key on your keyboard.</p>"),
+                QLabel("<p>Welcome to the Calculator Tutorial!</p>"),
+
+                QLabel("<p><b>Using the Mouse:</b></p>"),
+
+                QLabel("<ul>"
+                    "<li><b>Input numbers:</b> Click on the number buttons (0-9) on the calculator.</li>"
+                    "<li><b>Basic operations:</b> Click on the respective operation buttons:</li>"
+                    "<ul>"
+                    "<li>Addition (+): Click the '+' button.</li>"
+                    "<li>Subtraction (-): Click the '-' button.</li>"
+                    "<li>Multiplication (×): Click the '×' button.</li>"
+                    "<li>Division (÷): Click the '÷' button.</li>"
+                    "</ul>"
+                    "<li><b>Advanced operations:</b></li>"
+                    "<ul>"
+                    "<li>Factorial (x!): Click the 'x!' button.</li>"
+                    "<li>Power (x^y): Click the 'x^y' button.</li>"
+                    "<li>Square root ( √x): Click the ' √x' button.</li>"
+                    "<li>Natural logarithm (ln): Click the 'ln' button.</li>"
+                    "</ul>"
+                    "<li><b>Parenthesis:</b> Click the '(' and ')' buttons to input parentheses in the expression.</li>"
+                    "<li><b>Clear input:</b> Click the 'C' button to clear the input field.</li>"
+                    "<li><b>Delete:</b> Click the 'DEL' button to remove the last character in the input field.</li>"
+                    "<li><b>Evaluate:</b> Click the '=' button to calculate the result of the expression.</li>"
+                    "</ul>"),
+
+                QLabel("<p><b>Using the Keyboard:</b></p>"),
+
+                QLabel("<ul>"
+                    "<li><b>Input numbers:</b> Press the number keys (0-9) on your keyboard.</li>"
+                    "<li><b>Basic operations:</b> Press the respective operation keys:</li>"
+                    "<ul>"
+                    "<li>Addition (+): Press the '+' key.</li>"
+                    "<li>Subtraction (-): Press the '-' key.</li>"
+                    "<li>Multiplication (×): Press the '*' key (it will appear as '×' in the input window).</li>"
+                    "<li>Division (÷): Press the '/' key (it will appear as '÷' in the input window).</li>"
+                    "</ul>"
+                    "<li><b>Advanced operations:</b></li>"
+                    "<ul>"
+                    "<li>Factorial (x!): Press the 'f' key.</li>"
+                    "<li>Power (x^y): Press the 'p' key.</li>"
+                    "<li>Square root ( √x): Press the 's' key.</li>"
+                    "<li>Natural logarithm (ln): Press the 'l' key.</li>"
+                    "</ul>"
+                    "<li><b>Parenthesis:</b> Press the '(' and ')' keys to input parentheses in the expression.</li>"
+                    "<li><b>Clear input:</b> Press the 'C' key to clear the input field.</li>"
+                    "<li><b>Delete:</b> Press the 'Backspace' key to remove the last character in the input field.</li>"
+                    "<li><b>Evaluate:</b> Press the 'Enter' key to calculate the result of the expression.</li>"
+                    "</ul>"),
+                
+                QLabel("<p>You can move the calculator/calculator tutorial window and the by clicking and dragging the title bar. To close the calculator, click the 'X' button in the upper right corner. To access this tutorial at any time, click the '?' button in the title bar.</p>"),
         ]
+
 
         # Configure tutorial text labels and add them to the scroll area layout
         for label in self.tutorial_text:
@@ -378,6 +439,7 @@ class Calculator(QMainWindow):
     #
     def __init__(self):
         super().__init__() # Call the QMainWindow constructor
+        self.setObjectName("CalculatorWidget")
 
         self.setFixedSize(320, 480)  # Set a fixed size for the calculator window
         self.setWindowFlags(Qt.FramelessWindowHint | Qt.Window)  # Set window flags for a frameless window
@@ -495,18 +557,21 @@ class Calculator(QMainWindow):
     def _createDisplay(self):
         # Create the display QLineEdit and set its fixed height
         self.display = QLineEdit()
-        self.display.setFixedHeight(75)
+        self.display.setFixedHeight(75) 
         
         # Configure the display properties
         self.display.setReadOnly(True)
         self.display.setAlignment(Qt.AlignRight)
         self.generalLayout.addWidget(self.display)
         
+        
         # Set the style for the calculator
         self.setStyleSheet("""
-           QWidget {
+            #CalculatorWidget {
                 background-color: #202020;
-                border-radius: 5px;   
+                border: 1px solid #FFA07A;
+                border-radius: 5px;
+                padding: 1px;
             }
 
             QPushButton {
@@ -579,7 +644,7 @@ class Calculator(QMainWindow):
         
         self.buttons = {}
         buttonsLayout = QGridLayout() # Set up a grid layout for the buttons
-        buttonsLayout.setHorizontalSpacing(1) # Set horizontal spacing between buttons
+        buttonsLayout.setHorizontalSpacing(3) # Set horizontal spacing between buttons
         buttonsLayout.setVerticalSpacing(3) # Set vertical spacing between buttons
         
         # Dictionary containing button text and grid positions
