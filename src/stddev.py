@@ -1,5 +1,4 @@
-<<<<<<< HEAD
-#!/usr/bin/python
+#!/usr/bin/python3
 
 ##
 # @file: stddev.py
@@ -130,4 +129,3 @@ for line in sys.stdin:
 
 std_dev = standard_deviation(data)
 print(std_dev)
->>>>>>> 77d2ea5b4f626599e43ee4ab83c5f708bec648fe
