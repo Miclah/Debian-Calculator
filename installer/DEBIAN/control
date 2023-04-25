@@ -1,0 +1,11 @@
+Source: calculator
+Section: utils
+Priority: extra
+Maintainer: Denis Milistenfer <xmilis00@fit.vutbr.cz>
+Build-Depends: debhelper-compat (= 13), dh-python, python3-setuptools, python3-all, qtdeclarative5-dev, qt5-qmake
+Standards-Version: 4.6.0
+Package: ivs-calculator
+Version: 1.0
+Architecture: all
+Depends: python3-pip
+Description: Simple python calculator app
