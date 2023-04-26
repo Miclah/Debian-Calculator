@@ -1,0 +1,7 @@
+We calculated standart deviation with the following amount of inputs: 10, 1000, 1 000 000. 
+Based on the profiler output, the program spends the most time in the 
+variance_function function.
+
+Therefore, the best place to focus on optimizing the code would be in the 
+variance_function by potentially optimizing the mathematical calculations 
+being performed.
