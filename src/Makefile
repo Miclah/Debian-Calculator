@@ -53,7 +53,7 @@ installer2: setup $(PROFILER) $(MATH_LIB) $(EXT_MATH_LIB) dependencies.txt
 	chmod +x py_script2.sh
 	bash py_script2.sh
 
-pack: doc installer installer2 clean
+pack: doc installer installer2  clean
 	mkdir -p ../../$(TEAM)/repo && mkdir -p ../../$(TEAM)/installer
 
 	cp -r ../ ../../$(TEAM)/repo

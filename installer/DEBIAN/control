@@ -1,10 +1,10 @@
-Source: calculator
+Source: deviation
 Section: utils
 Priority: extra
 Maintainer: Denis Milistenfer <xmilis00@fit.vutbr.cz>
 Build-Depends: debhelper-compat (= 13), dh-python, python3-setuptools, python3-all, qtdeclarative5-dev, qt5-qmake
 Standards-Version: 4.6.0
-Package: ivs-calculator
+Package: ivs-deviation
 Version: 1.0
 Architecture: all
 Depends: python3-pip
