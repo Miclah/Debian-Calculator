@@ -3,7 +3,7 @@
 ##
 # @file: stddev.py
 # @brief: Standard deviation for IVS project 2.
-# @author: Denis Milistenfer <xmilis00@fit.vutbr.cz>
+# @author: X
 # @Created: 2023-03-23
 # @Last Modified: 2023-03-28
 ##

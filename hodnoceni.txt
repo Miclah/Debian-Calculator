@@ -1,4 +1,0 @@
-xpetra32 100 (GUI, mockup GUI, prezentace pro obhajobu, vytvoření GitHub repozitáře)
-xdanyl00 100 (testy, pokročilé mat. operace, zkušební instalace programu, zhodnocení práce a porovnání plánu)
-xmilis00 100 (programové dokumentace, profiling, instalátor a odinstalátor, návod)
-xbabia01 100 (vytvoření plánu projektu, základní mat. operace, Makefile, Debugging)

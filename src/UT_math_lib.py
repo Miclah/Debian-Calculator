@@ -6,7 +6,7 @@ from extended_math_lib import *
 ##
 # @file: UT_math_lib.py
 # @brief: Unit Tests for Math Library for IVS project 2.
-# @author Danyleyko Kirill (xdanyl00)
+# @author 
 # @Created: 2023-03-06
 # @Last Modified: 2023-04-24
 ##

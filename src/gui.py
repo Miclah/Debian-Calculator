@@ -3,7 +3,7 @@
 ##
 # @file: gui.py
 # @brief: GUI for IVS project 2.
-# @author Michal Petrán (xpetra32)
+# @author Michal Petrán
 # @Created: 22-03-2023
 # @Last Modified: 25-04-2023
 ##

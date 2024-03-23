@@ -3,7 +3,7 @@
 ##
 # @file: extended_math_lib.py
 # @brief: Extended Math Library for IVS project 2.
-# @author Danyleyko Kirill (xdanyl00)
+# @author X
 # @Created: 2023-03-25
 # @Last Modified: 2023-03-25
 ##
